@@ -6,14 +6,16 @@ import {
   BookOpenIcon, 
   UserIcon, 
   Cog6ToothIcon,
-  ShieldCheckIcon 
+  ShieldCheckIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 import { 
   HomeIcon as HomeIconSolid,
   BookOpenIcon as BookOpenIconSolid,
   UserIcon as UserIconSolid,
   Cog6ToothIcon as Cog6ToothIconSolid,
-  ShieldCheckIcon as ShieldCheckIconSolid
+  ShieldCheckIcon as ShieldCheckIconSolid,
+  ChartBarIcon as ChartBarIconSolid
 } from '@heroicons/react/24/solid';
 
 const BottomNav = () => {
@@ -23,6 +25,7 @@ const BottomNav = () => {
 
   const navItems = [
     { path: '/', icon: HomeIcon, activeIcon: HomeIconSolid, label: 'Home' },
+    { path: '/dashboard', icon: ChartBarIcon, activeIcon: ChartBarIconSolid, label: 'Dashboard' },
     { path: '/my-courses', icon: BookOpenIcon, activeIcon: BookOpenIconSolid, label: 'Courses' },
     { path: '/profile', icon: UserIcon, activeIcon: UserIconSolid, label: 'Profile' },
     { path: '/settings', icon: Cog6ToothIcon, activeIcon: Cog6ToothIconSolid, label: 'Settings' },

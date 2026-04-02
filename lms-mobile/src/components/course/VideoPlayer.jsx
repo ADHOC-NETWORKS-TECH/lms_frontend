@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { PlayIcon, PauseIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { CheckCircleIcon as CheckCircleOutline } from '@heroicons/react/24/outline';
 
-const VideoPlayer = ({ videoUrl, title, onComplete, autoPlay = false }) => {
+const VideoPlayer = ({ videoUrl, title, onComplete, onToggleComplete, isCompleted = false, autoPlay = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
   const videoRef = useRef(null);
 
   const togglePlay = () => {
@@ -24,7 +24,6 @@ const VideoPlayer = ({ videoUrl, title, onComplete, autoPlay = false }) => {
       setProgress(currentProgress);
       
       if (currentProgress >= 90 && !isCompleted && onComplete) {
-        setIsCompleted(true);
         onComplete();
       }
     }
@@ -37,10 +36,10 @@ const VideoPlayer = ({ videoUrl, title, onComplete, autoPlay = false }) => {
 
   const vimeoId = getVimeoId(videoUrl);
 
-  if (vimeoId) {
-    return (
-      <div className="bg-black rounded-lg overflow-hidden">
-        <div className="aspect-video">
+  return (
+    <div className="bg-black rounded-lg overflow-hidden">
+      <div className="aspect-video">
+        {vimeoId ? (
           <iframe
             src={`https://player.vimeo.com/video/${vimeoId}?autoplay=${autoPlay ? 1 : 0}&byline=0&portrait=0&title=0`}
             className="w-full h-full"
@@ -48,49 +47,47 @@ const VideoPlayer = ({ videoUrl, title, onComplete, autoPlay = false }) => {
             allowFullScreen
             title={title}
           />
-        </div>
-        <div className="p-4 bg-white">
-          <h3 className="font-semibold text-lg">{title}</h3>
-          {onComplete && !isCompleted && progress < 90 && (
-            <button onClick={onComplete} className="btn-primary w-full mt-3 flex items-center justify-center gap-2">
-              <CheckCircleIcon className="w-5 h-5" /> Mark as Complete
-            </button>
-          )}
-          {isCompleted && (
-            <div className="mt-3 text-green-600 text-center flex items-center justify-center gap-2">
-              <CheckCircleIcon className="w-5 h-5" /> Lesson Completed!
-            </div>
-          )}
-        </div>
+        ) : (
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            className="w-full h-full"
+            onTimeUpdate={handleTimeUpdate}
+            controls
+          />
+        )}
       </div>
-    );
-  }
-
-  return (
-    <div className="bg-black rounded-lg overflow-hidden">
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        className="w-full aspect-video"
-        onTimeUpdate={handleTimeUpdate}
-        controls
-      />
-      <div className="p-4 bg-white">
-        <h3 className="font-semibold text-lg mb-2">{title}</h3>
+      
+      <div className="p-4 bg-white dark:bg-gray-800">
+        <h3 className="font-semibold text-lg text-gray-800 dark:text-white">{title}</h3>
         
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-          <div className="bg-primary-600 h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
-        </div>
-        
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-4">
           <button onClick={togglePlay} className="btn-primary flex-1 flex items-center justify-center gap-2">
             {isPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
             {isPlaying ? 'Pause' : 'Play'}
           </button>
           
-          {onComplete && !isCompleted && progress < 90 && (
-            <button onClick={onComplete} className="btn-secondary flex-1">Mark Complete</button>
-          )}
+          {/* Toggle Complete Button */}
+          <button
+            onClick={onToggleComplete}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-medium transition-all ${
+              isCompleted 
+                ? 'bg-green-100 text-green-700 border border-green-300'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {isCompleted ? (
+              <>
+                <CheckCircleIcon className="w-5 h-5" />
+                Completed
+              </>
+            ) : (
+              <>
+                <CheckCircleOutline className="w-5 h-5" />
+                Mark Complete
+              </>
+            )}
+          </button>
         </div>
         
         {isCompleted && (

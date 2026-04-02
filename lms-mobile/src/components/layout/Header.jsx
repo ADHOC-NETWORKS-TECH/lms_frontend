@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Bars3Icon, XMarkIcon, UserCircleIcon, BookOpenIcon, HomeIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { 
+  Bars3Icon, 
+  XMarkIcon, 
+  UserCircleIcon, 
+  BookOpenIcon, 
+  HomeIcon, 
+  AcademicCapIcon,
+  Cog6ToothIcon,
+  ChartBarIcon
+} from '@heroicons/react/24/outline';
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -44,11 +53,19 @@ const Header = () => {
             
             {isAuthenticated && (
               <>
+                <Link to="/dashboard" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+                  <ChartBarIcon className="w-5 h-5" />
+                  <span>Dashboard</span>
+                </Link>
                 <Link to="/my-courses" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200">
                   My Courses
                 </Link>
                 <Link to="/profile" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200">
                   Profile
+                </Link>
+                <Link to="/settings" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+                  <Cog6ToothIcon className="w-5 h-5" />
+                  <span>Settings</span>
                 </Link>
                 {user?.role === 'admin' && (
                   <Link to="/admin" className="px-4 py-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200">
@@ -95,43 +112,51 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {menuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-100 bg-white">
+          <div className="md:hidden py-4 border-t border-gray-100 bg-white dark:bg-gray-800">
             <div className="flex flex-col space-y-2">
-              <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+              <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <HomeIcon className="w-5 h-5" />
                 <span>Home</span>
               </Link>
-              <Link to="/courses" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+              <Link to="/courses" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <BookOpenIcon className="w-5 h-5" />
                 <span>Courses</span>
               </Link>
               {isAuthenticated && (
                 <>
-                  <Link to="/my-courses" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                  <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <ChartBarIcon className="w-5 h-5" />
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link to="/my-courses" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
                     <BookOpenIcon className="w-5 h-5" />
                     <span>My Courses</span>
                   </Link>
-                  <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                  <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
                     <UserCircleIcon className="w-5 h-5" />
                     <span>Profile</span>
                   </Link>
+                  <Link to="/settings" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <Cog6ToothIcon className="w-5 h-5" />
+                    <span>Settings</span>
+                  </Link>
                   {user?.role === 'admin' && (
-                    <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
+                    <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors">
                       <AcademicCapIcon className="w-5 h-5" />
                       <span>Admin</span>
                     </Link>
                   )}
-                  <div className="border-t border-gray-100 my-2 pt-2">
+                  <div className="border-t border-gray-100 dark:border-gray-700 my-2 pt-2">
                     <div className="flex items-center gap-3 px-4 py-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white font-bold">
                         {user?.name?.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800">{user?.name}</p>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
+                        <p className="font-medium text-gray-800 dark:text-white">{user?.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
                       </div>
                     </div>
-                    <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium">
+                    <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors font-medium">
                       Logout
                     </button>
                   </div>
@@ -139,7 +164,7 @@ const Header = () => {
               )}
               {!isAuthenticated && (
                 <div className="flex flex-col gap-2 pt-2">
-                  <Link to="/login" onClick={() => setMenuOpen(false)} className="text-center px-4 py-3 text-primary-600 font-medium">
+                  <Link to="/login" onClick={() => setMenuOpen(false)} className="text-center px-4 py-3 text-primary-600 dark:text-primary-400 font-medium">
                     Login
                   </Link>
                   <Link to="/register" onClick={() => setMenuOpen(false)} className="text-center bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 rounded-xl font-medium">
