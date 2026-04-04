@@ -401,7 +401,7 @@ const AdminDashboard = () => {
           <BookOpenIcon className="w-8 h-8 text-primary-500" />
           <div>
             <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {stats?.content?.courses || 0}
+              {courses.length}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Total Courses
