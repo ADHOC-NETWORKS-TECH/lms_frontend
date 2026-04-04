@@ -5,7 +5,7 @@ import { getStorage } from '../../utils/storage';
 import Loader from '../../components/common/Loader';
 import { ShoppingCartIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://lms-backend-g1cy.onrender.com/api';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
