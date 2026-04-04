@@ -1,6 +1,6 @@
 import { getStorage } from '../utils/storage';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://lms-backend-g1cy.onrender.com/api';
 
 export const api = {
   get: async (url, auth = false) => {
