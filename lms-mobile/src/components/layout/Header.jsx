@@ -24,7 +24,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
+    <header className="bg-white/80 dark:bg-gray-950/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800 text-black dark:text-white">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -42,28 +42,28 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            <Link to="/" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+            <Link to="/" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
               <HomeIcon className="w-5 h-5" />
               <span>Home</span>
             </Link>
-            <Link to="/courses" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+            <Link to="/courses" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
               <BookOpenIcon className="w-5 h-5" />
               <span>Courses</span>
             </Link>
             
             {isAuthenticated && (
               <>
-                <Link to="/dashboard" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+                <Link to="/dashboard" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
                   <ChartBarIcon className="w-5 h-5" />
                   <span>Dashboard</span>
                 </Link>
-                <Link to="/my-courses" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200">
+                <Link to="/my-courses" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200">
                   My Courses
                 </Link>
-                <Link to="/profile" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200">
+                <Link to="/profile" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200">
                   Profile
                 </Link>
-                <Link to="/settings" className="px-4 py-2 text-gray-600 hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+                <Link to="/settings" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
                   <Cog6ToothIcon className="w-5 h-5" />
                   <span>Settings</span>
                 </Link>

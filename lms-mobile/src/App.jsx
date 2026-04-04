@@ -58,6 +58,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
 function AppRoutes() {
   return (
+    <div className="bg-white dark:bg-gray-900 min-h-screen text-black dark:text-white">
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/courses" element={<Home />} />
@@ -122,6 +123,7 @@ function AppRoutes() {
         }
       />
     </Routes>
+    </div>
   );
 }
 
