@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext, useContext, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Header from "./components/layout/Header";
@@ -31,98 +31,109 @@ const ThemeProvider = ({ children }) => {
   );
 };
 
-// Pages
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import Home from "./pages/public/Home";
-import CourseDetail from "./pages/public/CourseDetail";
-import Dashboard from "./pages/student/Dashboard";
-import MyCourses from "./pages/student/MyCourses";
-import CoursePlayer from "./pages/student/CoursePlayer";
-import Profile from "./pages/student/Profile";
-import Settings from "./pages/student/Settings";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+// Lazy load pages (optional - for performance)
+const Dashboard = lazy(() => import('./pages/student/Dashboard'));
+const MyCourses = lazy(() => import('./pages/student/MyCourses'));
+const CoursePlayer = lazy(() => import('./pages/student/CoursePlayer'));
+const Certificates = lazy(() => import('./pages/student/Certificates'));
+const Profile = lazy(() => import('./pages/student/Profile'));
+const Settings = lazy(() => import('./pages/student/Settings'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const Home = lazy(() => import('./pages/public/Home'));
+const CourseDetail = lazy(() => import('./pages/public/CourseDetail'));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Register = lazy(() => import('./pages/auth/Register'));
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
-  if (loading)
+  
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...
       </div>
     );
+  }
+  
   if (!isAuthenticated) return <Navigate to="/login" />;
   if (adminOnly && !isAdmin) return <Navigate to="/" />;
+  
   return children;
 };
 
 function AppRoutes() {
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen text-black dark:text-white">
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/courses" element={<Home />} />
-      <Route path="/course/:courseId" element={<CourseDetail />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/my-courses"
-        element={
-          <ProtectedRoute>
-            <MyCourses />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/course/:courseId/play"
-        element={
-          <ProtectedRoute>
-            <CoursePlayer />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute adminOnly>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
-      // Add Dashboard route
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+      <Suspense fallback={<div className="flex justify-center items-center h-screen">Loading...</div>}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/courses" element={<Home />} />
+          <Route path="/course/:courseId" element={<CourseDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Student Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-courses"
+            element={
+              <ProtectedRoute>
+                <MyCourses />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/course/:courseId/play"
+            element={
+              <ProtectedRoute>
+                <CoursePlayer />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/certificates"
+            element={
+              <ProtectedRoute>
+                <Certificates />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
     </div>
   );
 }
