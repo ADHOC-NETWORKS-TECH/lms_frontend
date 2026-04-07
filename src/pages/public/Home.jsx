@@ -39,10 +39,9 @@ const Home = () => {
     setLoading(false);
   }
 };
-
-  useEffect(() => {
-    fetchCourses();
-  }, [isAuthenticated]);
+useEffect(() => {
+  fetchCourses();
+}, [isAuthenticated, user]); 
 
   if (loading) return <Loader />;
 
