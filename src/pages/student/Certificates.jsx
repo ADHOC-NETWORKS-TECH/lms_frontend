@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getStorage } from "../../utils/storage";
 import Loader from "../../components/common/Loader";
-import { DocumentArrowDownIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
+import { DocumentArrowDownIcon, TrophyIcon } from "@heroicons/react/24/outline";
 
 const API_URL = import.meta.env.VITE_API_URL || "https://lms-backend-g1cy.onrender.com/api";
 
@@ -55,7 +55,7 @@ const Certificates = () => {
       
       {certificates.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-12 text-center">
-          <CheckBadgeIcon className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+          <TrophyIcon className="w-20 h-20 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">No certificates yet</h3>
           <p className="text-gray-500">Complete courses with 70%+ score to earn certificates</p>
         </div>
@@ -65,7 +65,7 @@ const Certificates = () => {
             <div key={cert.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-lg">{cert.course?.title}</h3>
+                  <h3 className="font-bold text-lg">{cert.course?.title || "Course"}</h3>
                   <p className="text-sm text-gray-500 mt-1">
                     Issued: {new Date(cert.issueDate).toLocaleDateString()}
                   </p>
@@ -74,7 +74,7 @@ const Certificates = () => {
                 </div>
                 <button
                   onClick={() => handleDownload(cert.id)}
-                  className="btn-primary flex items-center gap-2"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
                 >
                   <DocumentArrowDownIcon className="w-5 h-5" />
                   Download
