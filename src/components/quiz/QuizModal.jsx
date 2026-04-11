@@ -12,7 +12,6 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
 
   const handleAnswer = (questionId, answerIndex) => {
     setAnswers({ ...answers, [questionId]: answerIndex });
-    
     if (currentQuestion < quiz.questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     }
@@ -47,13 +46,13 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
               Get Certificate
             </button>
           ) : (
-            <button 
-              onClick={() => { 
-                setSubmitted(false); 
-                setCurrentQuestion(0); 
-                setAnswers({}); 
+            <button
+              onClick={() => {
+                setSubmitted(false);
+                setCurrentQuestion(0);
+                setAnswers({});
                 setResult(null);
-              }} 
+              }}
               className="btn-primary w-full"
             >
               Try Again
@@ -76,20 +75,20 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
               <XMarkIcon className="w-6 h-6" />
             </button>
           </div>
-          
+
           <div className="mb-4">
             <div className="flex justify-between text-sm text-gray-500 mb-1">
               <span>Question {currentQuestion + 1} of {quiz.questions.length}</span>
               <span>Time: {quiz.timeLimit} min</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-primary-600 h-2 rounded-full transition-all" 
-                style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }} 
+              <div
+                className="bg-primary-600 h-2 rounded-full transition-all"
+                style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}
               />
             </div>
           </div>
-          
+
           <div className="mb-6">
             <h3 className="text-lg font-medium mb-4">{question.questionText}</h3>
             <div className="space-y-3">
@@ -108,10 +107,10 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
               ))}
             </div>
           </div>
-          
+
           {currentQuestion === quiz.questions.length - 1 && (
-            <button 
-              onClick={handleSubmit} 
+            <button
+              onClick={handleSubmit}
               disabled={loading}
               className="btn-primary w-full"
             >
