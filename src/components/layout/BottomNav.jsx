@@ -7,7 +7,8 @@ import {
   UserIcon, 
   Cog6ToothIcon,
   ShieldCheckIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  TrophyIcon  // ← ADD THIS
 } from '@heroicons/react/24/outline';
 import { 
   HomeIcon as HomeIconSolid,
@@ -15,7 +16,8 @@ import {
   UserIcon as UserIconSolid,
   Cog6ToothIcon as Cog6ToothIconSolid,
   ShieldCheckIcon as ShieldCheckIconSolid,
-  ChartBarIcon as ChartBarIconSolid
+  ChartBarIcon as ChartBarIconSolid,
+  TrophyIcon as TrophyIconSolid  // ← ADD THIS
 } from '@heroicons/react/24/solid';
 
 const BottomNav = () => {
@@ -29,6 +31,7 @@ const BottomNav = () => {
     { path: '/my-courses', icon: BookOpenIcon, activeIcon: BookOpenIconSolid, label: 'Courses' },
     { path: '/profile', icon: UserIcon, activeIcon: UserIconSolid, label: 'Profile' },
     { path: '/settings', icon: Cog6ToothIcon, activeIcon: Cog6ToothIconSolid, label: 'Settings' },
+    { path: '/certificates', icon: TrophyIcon, activeIcon: TrophyIconSolid, label: 'Certificates' },
   ];
 
   if (isAdmin) {

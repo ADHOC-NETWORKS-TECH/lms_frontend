@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { certificateService } from '../../services/certificate';
-import Loader from '../../components/common/Loader';
-import { DocumentArrowDownIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from "react";
+import { getStorage } from "../../utils/storage";
+import Loader from "../../components/common/Loader";
+import { DocumentArrowDownIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
+
+const API_URL = import.meta.env.VITE_API_URL || "https://lms-backend-g1cy.onrender.com/api";
 
 const Certificates = () => {
   const [certificates, setCertificates] = useState([]);
@@ -13,10 +15,14 @@ const Certificates = () => {
 
   const fetchCertificates = async () => {
     try {
-      const response = await certificateService.getMyCertificates();
-      setCertificates(response.data || []);
+      const token = getStorage("token");
+      const response = await fetch(`${API_URL}/certificates/my`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      setCertificates(data.data || []);
     } catch (error) {
-      console.error('Error fetching certificates:', error);
+      console.error("Error fetching certificates:", error);
     } finally {
       setLoading(false);
     }
@@ -24,15 +30,20 @@ const Certificates = () => {
 
   const handleDownload = async (id) => {
     try {
-      const blob = await certificateService.downloadCertificate(id);
+      const token = getStorage("token");
+      const response = await fetch(`${API_URL}/certificates/${id}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `certificate_${id}.pdf`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download error:', error);
+      console.error("Download error:", error);
+      alert("Failed to download certificate");
     }
   };
 
@@ -50,7 +61,7 @@ const Certificates = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {certificates.map(cert => (
+          {certificates.map((cert) => (
             <div key={cert.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
               <div className="flex justify-between items-start">
                 <div>

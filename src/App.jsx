@@ -1,4 +1,11 @@
-import React, { useState, useEffect, createContext, useContext, lazy, Suspense } from "react";
+import React, {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  lazy,
+  Suspense,
+} from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Header from "./components/layout/Header";
@@ -31,22 +38,23 @@ const ThemeProvider = ({ children }) => {
   );
 };
 
-// Lazy load pages (optional - for performance)
-const Dashboard = lazy(() => import('./pages/student/Dashboard'));
-const MyCourses = lazy(() => import('./pages/student/MyCourses'));
-const CoursePlayer = lazy(() => import('./pages/student/CoursePlayer'));
-const Certificates = lazy(() => import('./pages/student/Certificates'));
-const Profile = lazy(() => import('./pages/student/Profile'));
-const Settings = lazy(() => import('./pages/student/Settings'));
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-const Home = lazy(() => import('./pages/public/Home'));
-const CourseDetail = lazy(() => import('./pages/public/CourseDetail'));
-const Login = lazy(() => import('./pages/auth/Login'));
-const Register = lazy(() => import('./pages/auth/Register'));
+// Lazy load pages
+const Dashboard = lazy(() => import("./pages/student/Dashboard"));
+const MyCourses = lazy(() => import("./pages/student/MyCourses"));
+const CoursePlayer = lazy(() => import("./pages/student/CoursePlayer"));
+const Certificates = lazy(() => import("./pages/student/Certificates"));
+const Profile = lazy(() => import("./pages/student/Profile"));
+const Settings = lazy(() => import("./pages/student/Settings"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const Analytics = lazy(() => import("./pages/admin/Analytics"));
+const Home = lazy(() => import("./pages/public/Home"));
+const CourseDetail = lazy(() => import("./pages/public/CourseDetail"));
+const Login = lazy(() => import("./pages/auth/Login"));
+const Register = lazy(() => import("./pages/auth/Register"));
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -54,17 +62,23 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
       </div>
     );
   }
-  
+
   if (!isAuthenticated) return <Navigate to="/login" />;
   if (adminOnly && !isAdmin) return <Navigate to="/" />;
-  
+
   return children;
 };
 
 function AppRoutes() {
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen text-black dark:text-white">
-      <Suspense fallback={<div className="flex justify-center items-center h-screen">Loading...</div>}>
+      <Suspense
+        fallback={
+          <div className="flex justify-center items-center h-screen">
+            Loading...
+          </div>
+        }
+      >
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -72,7 +86,7 @@ function AppRoutes() {
           <Route path="/course/:courseId" element={<CourseDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           {/* Student Routes */}
           <Route
             path="/dashboard"
@@ -122,13 +136,21 @@ function AppRoutes() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Admin Routes */}
           <Route
             path="/admin"
             element={
               <ProtectedRoute adminOnly>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics"
+            element={
+              <ProtectedRoute adminOnly>
+                <Analytics />
               </ProtectedRoute>
             }
           />

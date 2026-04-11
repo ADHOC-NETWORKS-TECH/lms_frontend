@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getStorage } from "../../utils/storage";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import {
   PlusIcon,
   TrashIcon,
@@ -16,6 +16,8 @@ import {
   ChevronRightIcon,
   FolderIcon,
   ArrowLeftIcon,
+  ChartBarIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 
 const API_URL = "https://lms-backend-g1cy.onrender.com/api";
@@ -25,6 +27,7 @@ const AdminDashboard = () => {
   const [courses, setCourses] = useState([]);
   const [modules, setModules] = useState([]);
   const [lessons, setLessons] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("courses");
@@ -35,6 +38,7 @@ const AdminDashboard = () => {
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showModuleModal, setShowModuleModal] = useState(false);
   const [showLessonModal, setShowLessonModal] = useState(false);
+  const [showQuizModal, setShowQuizModal] = useState(false);
 
   // Form data
   const [courseForm, setCourseForm] = useState({
@@ -59,6 +63,22 @@ const AdminDashboard = () => {
     duration: 0,
   });
 
+  // Quiz states
+  const [quizForm, setQuizForm] = useState({
+    title: "",
+    description: "",
+    type: "final",
+    passingScore: 70,
+    timeLimit: 30,
+  });
+  const [questions, setQuestions] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState({
+    questionText: "",
+    options: ["", "", "", ""],
+    correctAnswer: 0,
+    points: 1,
+  });
+
   // Fetch all courses
   const fetchCourses = async () => {
     try {
@@ -70,28 +90,21 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch modules for a specific course - Get from course data
+  // Fetch modules for a specific course
   const fetchModules = async (courseId) => {
     try {
       const token = getStorage("token");
-      console.log("🔍 Fetching course data for ID:", courseId);
-
       const response = await fetch(`${API_URL}/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-
-      console.log("📦 Course data:", data);
-
       if (data.success && data.data) {
-        const modulesData = data.data.modules || [];
-        console.log("✅ Found modules:", modulesData.length);
-        setModules(modulesData);
+        setModules(data.data.modules || []);
       } else {
         setModules([]);
       }
     } catch (error) {
-      console.error("❌ Error fetching modules:", error);
+      console.error("Error fetching modules:", error);
       setModules([]);
     }
   };
@@ -105,7 +118,7 @@ const AdminDashboard = () => {
       });
       const data = await response.json();
       const foundModule = (data.data?.modules || []).find(
-        (m) => m.id === moduleId,
+        (m) => m.id === moduleId
       );
       setLessons(foundModule?.lessons || []);
     } catch (error) {
@@ -114,22 +127,29 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fetch quizzes for a course
+  const fetchQuizzes = async (courseId) => {
+    try {
+      const token = getStorage("token");
+      const response = await fetch(`${API_URL}/quizzes/course/${courseId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      setQuizzes(data.data || []);
+    } catch (error) {
+      console.error("Error fetching quizzes:", error);
+      setQuizzes([]);
+    }
+  };
+
   // Fetch stats
   const fetchStats = async () => {
     try {
       const token = getStorage("token");
-      console.log("📊 Fetching stats...");
-
       const response = await fetch(`${API_URL}/admin/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-
-      console.log("📊 Stats response:", data);
-      console.log("   Students:", data.data?.users?.students);
-      console.log("   Active Subs:", data.data?.subscriptions?.active);
-      console.log("   Revenue:", data.data?.revenue?.total);
-
       setStats(data.data);
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -146,20 +166,8 @@ const AdminDashboard = () => {
     loadData();
   }, []);
 
-  // Auto-refresh stats every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (activeTab === "courses") {
-        fetchStats();
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [activeTab]);
-
   // Handle course selection
   const handleSelectCourse = async (course) => {
-    console.log("📘 Selected course:", course.title);
     setSelectedCourse(course);
     setSelectedModule(null);
     setActiveTab("modules");
@@ -168,10 +176,17 @@ const AdminDashboard = () => {
 
   // Handle module selection
   const handleSelectModule = async (module) => {
-    console.log("📁 Selected module:", module.title);
     setSelectedModule(module);
     setActiveTab("lessons");
     await fetchLessons(module.id);
+  };
+
+  // Handle quiz tab
+  const handleQuizTab = async () => {
+    setActiveTab("quizzes");
+    if (selectedCourse) {
+      await fetchQuizzes(selectedCourse.id);
+    }
   };
 
   // Handle back to courses
@@ -181,17 +196,7 @@ const AdminDashboard = () => {
     setActiveTab("courses");
     setModules([]);
     setLessons([]);
-  };
-
-  // Manual refresh function
-  const handleRefresh = async () => {
-    setLoading(true);
-    await Promise.all([fetchCourses(), fetchStats()]);
-    if (selectedCourse) {
-      await fetchModules(selectedCourse.id);
-    }
-    setLoading(false);
-    alert("Dashboard refreshed!");
+    setQuizzes([]);
   };
 
   // Handle back to modules
@@ -247,8 +252,6 @@ const AdminDashboard = () => {
     }
 
     const token = getStorage("token");
-    console.log("📝 Adding module to course:", selectedCourse.id);
-
     const response = await fetch(
       `${API_URL}/admin/courses/${selectedCourse.id}/modules`,
       {
@@ -258,23 +261,18 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(moduleForm),
-      },
+      }
     );
-
-    const result = await response.json();
-    console.log("Add module response:", result);
 
     if (response.ok) {
       alert("Module added successfully!");
       setShowModuleModal(false);
       setModuleForm({ title: "", order: 1 });
-
-      // Wait a moment for database to update, then refresh
       setTimeout(async () => {
         await fetchModules(selectedCourse.id);
       }, 500);
     } else {
-      alert("Failed to add module: " + (result.message || "Unknown error"));
+      alert("Failed to add module");
     }
   };
 
@@ -295,7 +293,7 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(lessonForm),
-      },
+      }
     );
 
     if (response.ok) {
@@ -308,7 +306,6 @@ const AdminDashboard = () => {
         order: 1,
         duration: 0,
       });
-
       setTimeout(async () => {
         await fetchLessons(selectedModule.id);
       }, 500);
@@ -317,11 +314,84 @@ const AdminDashboard = () => {
     }
   };
 
+  // Add question to list
+  const addQuestion = () => {
+    if (!currentQuestion.questionText) {
+      alert("Question text is required");
+      return;
+    }
+    const emptyOptions = currentQuestion.options.some((opt) => opt === "");
+    if (emptyOptions) {
+      alert("Please fill all 4 options");
+      return;
+    }
+    setQuestions([...questions, { ...currentQuestion }]);
+    setCurrentQuestion({
+      questionText: "",
+      options: ["", "", "", ""],
+      correctAnswer: 0,
+      points: 1,
+    });
+  };
+
+  // Remove question
+  const removeQuestion = (index) => {
+    setQuestions(questions.filter((_, i) => i !== index));
+  };
+
+  // Create quiz
+  const handleCreateQuiz = async () => {
+    if (!quizForm.title) {
+      alert("Quiz title is required");
+      return;
+    }
+
+    const token = getStorage("token");
+    const response = await fetch(`${API_URL}/quizzes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        courseId: selectedCourse.id,
+        ...quizForm,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      alert("Quiz created successfully!");
+
+      if (questions.length > 0) {
+        await fetch(`${API_URL}/quizzes/${data.data.id}/questions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ questions }),
+        });
+      }
+
+      setShowQuizModal(false);
+      setQuizForm({
+        title: "",
+        description: "",
+        type: "final",
+        passingScore: 70,
+        timeLimit: 30,
+      });
+      setQuestions([]);
+      await fetchQuizzes(selectedCourse.id);
+    } else {
+      alert("Failed to create quiz");
+    }
+  };
+
   // Delete course
   const handleDeleteCourse = async (id) => {
-    if (
-      confirm("Delete this course? All modules and lessons will be deleted.")
-    ) {
+    if (confirm("Delete this course? All modules and lessons will be deleted.")) {
       const token = getStorage("token");
       await fetch(`${API_URL}/admin/courses/${id}`, {
         method: "DELETE",
@@ -360,11 +430,7 @@ const AdminDashboard = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   return (
@@ -376,12 +442,18 @@ const AdminDashboard = () => {
             Admin Dashboard
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Manage courses, modules and lessons
+            Manage courses, modules, lessons and quizzes
           </p>
         </div>
-        <button onClick={logout} className="text-red-600 hover:text-red-700">
-          Logout
-        </button>
+        <div className="flex gap-3">
+          <Link to="/admin/analytics" className="btn-secondary flex items-center gap-2">
+            <ChartBarIcon className="w-5 h-5" />
+            Analytics
+          </Link>
+          <button onClick={logout} className="text-red-600 hover:text-red-700">
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -389,74 +461,75 @@ const AdminDashboard = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex items-center gap-3">
           <UsersIcon className="w-8 h-8 text-primary-500" />
           <div>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {stats?.users?.students || 0}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Total Students
-            </p>
+            <p className="text-2xl font-bold">{stats?.users?.students || 0}</p>
+            <p className="text-sm text-gray-500">Total Students</p>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex items-center gap-3">
           <BookOpenIcon className="w-8 h-8 text-primary-500" />
           <div>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {courses.length}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Total Courses
-            </p>
+            <p className="text-2xl font-bold">{courses.length}</p>
+            <p className="text-sm text-gray-500">Total Courses</p>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex items-center gap-3">
           <AcademicCapIcon className="w-8 h-8 text-primary-500" />
           <div>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              {stats?.subscriptions?.active || 0}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Active Subscriptions
-            </p>
+            <p className="text-2xl font-bold">{stats?.subscriptions?.active || 0}</p>
+            <p className="text-sm text-gray-500">Active Subscriptions</p>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex items-center gap-3">
           <CurrencyRupeeIcon className="w-8 h-8 text-primary-500" />
           <div>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">
-              ₹{stats?.revenue?.total || 0}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Total Revenue
-            </p>
+            <p className="text-2xl font-bold">₹{stats?.revenue?.total || 0}</p>
+            <p className="text-sm text-gray-500">Total Revenue</p>
           </div>
         </div>
       </div>
 
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        {activeTab !== "courses" && (
+      {/* Tabs - Show only when course selected */}
+      {selectedCourse && (
+        <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700">
           <button
-            onClick={handleBackToCourses}
-            className="flex items-center gap-1 hover:text-primary-600"
+            onClick={() => setActiveTab("modules")}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === "modules"
+                ? "text-primary-600 border-b-2 border-primary-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            <ArrowLeftIcon className="w-4 h-4" />
-            Courses
+            Modules
           </button>
-        )}
-        {selectedCourse && activeTab !== "courses" && (
+          <button
+            onClick={handleQuizTab}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === "quizzes"
+                ? "text-primary-600 border-b-2 border-primary-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Quizzes
+          </button>
+        </div>
+      )}
+
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+        <button onClick={handleBackToCourses} className="flex items-center gap-1 hover:text-primary-600">
+          <ArrowLeftIcon className="w-4 h-4" />
+          Courses
+        </button>
+        {selectedCourse && (
           <>
             <ChevronRightIcon className="w-4 h-4" />
-            <span className="text-gray-800 dark:text-white font-medium">
-              {selectedCourse.title}
-            </span>
+            <span className="text-gray-800 dark:text-white font-medium">{selectedCourse.title}</span>
           </>
         )}
         {selectedModule && activeTab === "lessons" && (
           <>
             <ChevronRightIcon className="w-4 h-4" />
-            <span className="text-gray-800 dark:text-white font-medium">
-              {selectedModule.title}
-            </span>
+            <span className="text-gray-800 dark:text-white font-medium">{selectedModule.title}</span>
           </>
         )}
       </div>
@@ -464,64 +537,22 @@ const AdminDashboard = () => {
       {/* Courses Tab */}
       {activeTab === "courses" && (
         <div>
-          <button
-            onClick={() => setShowCourseModal(true)}
-            className="btn-primary mb-6 flex items-center gap-2"
-          >
+          <button onClick={() => setShowCourseModal(true)} className="btn-primary mb-6 flex items-center gap-2">
             <PlusIcon className="w-5 h-5" /> Add New Course
           </button>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.length === 0 ? (
-              <div className="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
-                <p className="text-gray-500 dark:text-gray-400">
-                  No courses yet. Click "Add New Course" to create one.
-                </p>
-              </div>
-            ) : (
-              courses.map((course) => (
-                <div
-                  key={course.id}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition-all overflow-hidden"
+            {courses.map((course) => (
+              <div key={course.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <h3 className="font-bold text-lg">{course.title}</h3>
+                <p className="text-sm text-gray-500 mt-1">{course.description}</p>
+                <button
+                  onClick={() => handleSelectCourse(course)}
+                  className="mt-4 w-full bg-gray-100 py-2 rounded-lg hover:bg-primary-100 transition"
                 >
-                  <div className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-white">
-                          {course.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                          {course.description}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                            1M: ₹{course.price_1month}
-                          </span>
-                          <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                            3M: ₹{course.price_3months}
-                          </span>
-                          <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                            6M: ₹{course.price_6months}
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteCourse(course.id)}
-                        className="text-red-500 hover:text-red-600 p-1"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => handleSelectCourse(course)}
-                      className="mt-4 w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900 hover:text-primary-600 transition text-sm font-medium"
-                    >
-                      Manage Modules
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
+                  Manage Course
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -529,61 +560,22 @@ const AdminDashboard = () => {
       {/* Modules Tab */}
       {activeTab === "modules" && selectedCourse && (
         <div>
-          <button
-            onClick={() => setShowModuleModal(true)}
-            className="btn-primary mb-6 flex items-center gap-2"
-          >
-            <PlusIcon className="w-5 h-5" /> Add Module to "
-            {selectedCourse.title}"
+          <button onClick={() => setShowModuleModal(true)} className="btn-primary mb-6 flex items-center gap-2">
+            <PlusIcon className="w-5 h-5" /> Add Module
           </button>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {modules.length === 0 ? (
-              <div className="col-span-full bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
-                <FolderIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  No modules yet. Click "Add Module" to create one.
-                </p>
-                <p className="text-xs text-gray-400 mt-2">
-                  Check browser console for debug info (F12)
-                </p>
-              </div>
-            ) : (
-              modules.map((module) => (
-                <div
-                  key={module.id}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition-all overflow-hidden"
+            {modules.map((module) => (
+              <div key={module.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <h3 className="font-bold">{module.title}</h3>
+                <p className="text-xs text-gray-500 mt-1">Order: {module.order}</p>
+                <button
+                  onClick={() => handleSelectModule(module)}
+                  className="mt-4 w-full bg-gray-100 py-2 rounded-lg hover:bg-primary-100 transition"
                 >
-                  <div className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-gray-800 dark:text-white">
-                          {module.title}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Order: {module.order}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {module.lessons?.length || 0} lessons
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteModule(module.id)}
-                        className="text-red-500 hover:text-red-600 p-1"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => handleSelectModule(module)}
-                      className="mt-4 w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900 hover:text-primary-600 transition text-sm font-medium"
-                    >
-                      Manage Lessons
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
+                  Manage Lessons
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -591,67 +583,44 @@ const AdminDashboard = () => {
       {/* Lessons Tab */}
       {activeTab === "lessons" && selectedModule && (
         <div>
-          <button
-            onClick={() => setShowLessonModal(true)}
-            className="btn-primary mb-6 flex items-center gap-2"
-          >
-            <PlusIcon className="w-5 h-5" /> Add Lesson to "
-            {selectedModule.title}"
+          <button onClick={() => setShowLessonModal(true)} className="btn-primary mb-6 flex items-center gap-2">
+            <PlusIcon className="w-5 h-5" /> Add Lesson
           </button>
-
           <div className="space-y-4">
-            {lessons.length === 0 ? (
+            {lessons.map((lesson) => (
+              <div key={lesson.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <h3 className="font-bold">{lesson.title}</h3>
+                <p className="text-xs text-gray-500">{lesson.duration} min | Order: {lesson.order}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quizzes Tab */}
+      {activeTab === "quizzes" && selectedCourse && (
+        <div>
+          <button onClick={() => setShowQuizModal(true)} className="btn-primary mb-6 flex items-center gap-2">
+            <PlusIcon className="w-5 h-5" /> Create Quiz
+          </button>
+          <div className="space-y-4">
+            {quizzes.length === 0 ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
-                <VideoCameraIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  No lessons yet. Click "Add Lesson" to create one.
-                </p>
+                <QuestionMarkCircleIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-500">No quizzes yet. Click "Create Quiz" to add one.</p>
               </div>
             ) : (
-              lessons.map((lesson) => (
-                <div
-                  key={lesson.id}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 hover:shadow-lg transition-all"
-                >
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-xl flex items-center justify-center">
-                      <VideoCameraIcon className="w-6 h-6 text-primary-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-bold text-gray-800 dark:text-white">
-                            {lesson.title}
-                          </h3>
-                          <div className="flex gap-3 mt-1">
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                              <ClockIcon className="w-3 h-3" />{" "}
-                              {lesson.duration || 0} min
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              Order: {lesson.order}
-                            </span>
-                          </div>
-                          {lesson.pdfUrl && (
-                            <a
-                              href={lesson.pdfUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary-600 text-xs hover:underline mt-2 inline-flex items-center gap-1"
-                            >
-                              <DocumentTextIcon className="w-3 h-3" /> Download
-                              Resources
-                            </a>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleDeleteLesson(lesson.id)}
-                          className="text-red-500 hover:text-red-600 p-1"
-                        >
-                          <TrashIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
+              quizzes.map((quiz) => (
+                <div key={quiz.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                  <h3 className="font-bold text-lg">{quiz.title}</h3>
+                  <p className="text-sm text-gray-500">{quiz.description}</p>
+                  <div className="flex gap-3 mt-2">
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      Passing: {quiz.passingScore}%
+                    </span>
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                      Time: {quiz.timeLimit} min
+                    </span>
                   </div>
                 </div>
               ))
@@ -663,135 +632,54 @@ const AdminDashboard = () => {
       {/* Course Modal */}
       {showCourseModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                  Create New Course
-                </h2>
-                <button onClick={() => setShowCourseModal(false)}>
-                  <XMarkIcon className="w-6 h-6 text-gray-500" />
-                </button>
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Create New Course</h2>
+              <button onClick={() => setShowCourseModal(false)}>
+                <XMarkIcon className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Course Title"
+                value={courseForm.title}
+                onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                className="input"
+              />
+              <textarea
+                placeholder="Description"
+                value={courseForm.description}
+                onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+                className="input"
+                rows={3}
+              />
+              <div className="grid grid-cols-3 gap-3">
+                <input
+                  type="number"
+                  placeholder="1 Month Price"
+                  value={courseForm.price_1month}
+                  onChange={(e) => setCourseForm({ ...courseForm, price_1month: parseInt(e.target.value) })}
+                  className="input"
+                />
+                <input
+                  type="number"
+                  placeholder="3 Months Price"
+                  value={courseForm.price_3months}
+                  onChange={(e) => setCourseForm({ ...courseForm, price_3months: parseInt(e.target.value) })}
+                  className="input"
+                />
+                <input
+                  type="number"
+                  placeholder="6 Months Price"
+                  value={courseForm.price_6months}
+                  onChange={(e) => setCourseForm({ ...courseForm, price_6months: parseInt(e.target.value) })}
+                  className="input"
+                />
               </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Course Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={courseForm.title}
-                    onChange={(e) =>
-                      setCourseForm({ ...courseForm, title: e.target.value })
-                    }
-                    className="input"
-                    placeholder="e.g., Complete JavaScript Course"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Description
-                  </label>
-                  <textarea
-                    value={courseForm.description}
-                    onChange={(e) =>
-                      setCourseForm({
-                        ...courseForm,
-                        description: e.target.value,
-                      })
-                    }
-                    className="input"
-                    rows={3}
-                    placeholder="Course description"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Thumbnail URL
-                  </label>
-                  <input
-                    type="text"
-                    value={courseForm.thumbnail}
-                    onChange={(e) =>
-                      setCourseForm({
-                        ...courseForm,
-                        thumbnail: e.target.value,
-                      })
-                    }
-                    className="input"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                      1 Month (₹)
-                    </label>
-                    <input
-                      type="number"
-                      value={courseForm.price_1month}
-                      onChange={(e) =>
-                        setCourseForm({
-                          ...courseForm,
-                          price_1month: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                      3 Months (₹)
-                    </label>
-                    <input
-                      type="number"
-                      value={courseForm.price_3months}
-                      onChange={(e) =>
-                        setCourseForm({
-                          ...courseForm,
-                          price_3months: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                      6 Months (₹)
-                    </label>
-                    <input
-                      type="number"
-                      value={courseForm.price_6months}
-                      onChange={(e) =>
-                        setCourseForm({
-                          ...courseForm,
-                          price_6months: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleCreateCourse}
-                  className="btn-primary flex-1"
-                >
-                  Create Course
-                </button>
-                <button
-                  onClick={() => setShowCourseModal(false)}
-                  className="btn-secondary flex-1"
-                >
-                  Cancel
-                </button>
-              </div>
+              <button onClick={handleCreateCourse} className="btn-primary w-full">
+                Create Course
+              </button>
             </div>
           </div>
         </div>
@@ -800,65 +688,31 @@ const AdminDashboard = () => {
       {/* Module Modal */}
       {showModuleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                  Add Module to "{selectedCourse?.title}"
-                </h2>
-                <button onClick={() => setShowModuleModal(false)}>
-                  <XMarkIcon className="w-6 h-6 text-gray-500" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Module Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={moduleForm.title}
-                    onChange={(e) =>
-                      setModuleForm({ ...moduleForm, title: e.target.value })
-                    }
-                    className="input"
-                    placeholder="e.g., Introduction to JavaScript"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Order (1, 2, 3...)
-                  </label>
-                  <input
-                    type="number"
-                    value={moduleForm.order}
-                    onChange={(e) =>
-                      setModuleForm({
-                        ...moduleForm,
-                        order: parseInt(e.target.value) || 1,
-                      })
-                    }
-                    className="input"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleAddModule}
-                  className="btn-primary flex-1"
-                >
-                  Add Module
-                </button>
-                <button
-                  onClick={() => setShowModuleModal(false)}
-                  className="btn-secondary flex-1"
-                >
-                  Cancel
-                </button>
-              </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Add Module to "{selectedCourse?.title}"</h2>
+              <button onClick={() => setShowModuleModal(false)}>
+                <XMarkIcon className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Module Title"
+                value={moduleForm.title}
+                onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
+                className="input"
+              />
+              <input
+                type="number"
+                placeholder="Order"
+                value={moduleForm.order}
+                onChange={(e) => setModuleForm({ ...moduleForm, order: parseInt(e.target.value) })}
+                className="input"
+              />
+              <button onClick={handleAddModule} className="btn-primary w-full">
+                Add Module
+              </button>
             </div>
           </div>
         </div>
@@ -867,118 +721,163 @@ const AdminDashboard = () => {
       {/* Lesson Modal */}
       {showLessonModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                  Add Lesson to "{selectedModule?.title}"
-                </h2>
-                <button onClick={() => setShowLessonModal(false)}>
-                  <XMarkIcon className="w-6 h-6 text-gray-500" />
-                </button>
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Add Lesson to "{selectedModule?.title}"</h2>
+              <button onClick={() => setShowLessonModal(false)}>
+                <XMarkIcon className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Lesson Title"
+                value={lessonForm.title}
+                onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+                className="input"
+              />
+              <input
+                type="text"
+                placeholder="Video URL"
+                value={lessonForm.videoUrl}
+                onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
+                className="input"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="number"
+                  placeholder="Order"
+                  value={lessonForm.order}
+                  onChange={(e) => setLessonForm({ ...lessonForm, order: parseInt(e.target.value) })}
+                  className="input"
+                />
+                <input
+                  type="number"
+                  placeholder="Duration (min)"
+                  value={lessonForm.duration}
+                  onChange={(e) => setLessonForm({ ...lessonForm, duration: parseInt(e.target.value) })}
+                  className="input"
+                />
               </div>
+              <button onClick={handleAddLesson} className="btn-primary w-full">
+                Add Lesson
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Lesson Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={lessonForm.title}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, title: e.target.value })
-                    }
-                    className="input"
-                    placeholder="e.g., Variables and Data Types"
-                  />
-                </div>
+      {/* Quiz Modal */}
+      {showQuizModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Create Quiz for "{selectedCourse?.title}"</h2>
+              <button onClick={() => setShowQuizModal(false)}>
+                <XMarkIcon className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Video URL *
-                  </label>
-                  <input
-                    type="text"
-                    value={lessonForm.videoUrl}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, videoUrl: e.target.value })
-                    }
-                    className="input"
-                    placeholder="https://vimeo.com/123456789"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Vimeo or YouTube URL
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Resources (PDF URL)
-                  </label>
-                  <input
-                    type="text"
-                    value={lessonForm.pdfUrl}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, pdfUrl: e.target.value })
-                    }
-                    className="input"
-                    placeholder="https://example.com/resource.pdf"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                      Order
-                    </label>
-                    <input
-                      type="number"
-                      value={lessonForm.order}
-                      onChange={(e) =>
-                        setLessonForm({
-                          ...lessonForm,
-                          order: parseInt(e.target.value) || 1,
-                        })
-                      }
-                      className="input"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                      Duration (minutes)
-                    </label>
-                    <input
-                      type="number"
-                      value={lessonForm.duration}
-                      onChange={(e) =>
-                        setLessonForm({
-                          ...lessonForm,
-                          duration: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      className="input"
-                      placeholder="15"
-                    />
-                  </div>
-                </div>
+            {/* Quiz Details */}
+            <div className="space-y-4 mb-6">
+              <h3 className="font-semibold">Quiz Details</h3>
+              <input
+                type="text"
+                placeholder="Quiz Title"
+                value={quizForm.title}
+                onChange={(e) => setQuizForm({ ...quizForm, title: e.target.value })}
+                className="input"
+              />
+              <textarea
+                placeholder="Description"
+                value={quizForm.description}
+                onChange={(e) => setQuizForm({ ...quizForm, description: e.target.value })}
+                className="input"
+                rows={2}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="number"
+                  placeholder="Passing Score (%)"
+                  value={quizForm.passingScore}
+                  onChange={(e) => setQuizForm({ ...quizForm, passingScore: parseInt(e.target.value) })}
+                  className="input"
+                />
+                <input
+                  type="number"
+                  placeholder="Time Limit (minutes)"
+                  value={quizForm.timeLimit}
+                  onChange={(e) => setQuizForm({ ...quizForm, timeLimit: parseInt(e.target.value) })}
+                  className="input"
+                />
               </div>
+            </div>
 
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleAddLesson}
-                  className="btn-primary flex-1"
-                >
-                  Add Lesson
-                </button>
-                <button
-                  onClick={() => setShowLessonModal(false)}
-                  className="btn-secondary flex-1"
-                >
-                  Cancel
+            {/* Questions Section */}
+            <div className="space-y-4 mb-6">
+              <h3 className="font-semibold">Questions ({questions.length})</h3>
+              {questions.map((q, idx) => (
+                <div key={idx} className="bg-gray-50 p-3 rounded-lg">
+                  <div className="flex justify-between">
+                    <p className="font-medium">Q{idx + 1}: {q.questionText}</p>
+                    <button onClick={() => removeQuestion(idx)} className="text-red-500">
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add Question */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Add New Question</h4>
+                <input
+                  type="text"
+                  placeholder="Question text"
+                  value={currentQuestion.questionText}
+                  onChange={(e) => setCurrentQuestion({ ...currentQuestion, questionText: e.target.value })}
+                  className="input mb-3"
+                />
+                {currentQuestion.options.map((opt, idx) => (
+                  <input
+                    key={idx}
+                    type="text"
+                    placeholder={`Option ${idx + 1}`}
+                    value={opt}
+                    onChange={(e) => {
+                      const newOptions = [...currentQuestion.options];
+                      newOptions[idx] = e.target.value;
+                      setCurrentQuestion({ ...currentQuestion, options: newOptions });
+                    }}
+                    className="input mb-2"
+                  />
+                ))}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <select
+                    value={currentQuestion.correctAnswer}
+                    onChange={(e) => setCurrentQuestion({ ...currentQuestion, correctAnswer: parseInt(e.target.value) })}
+                    className="input"
+                  >
+                    {currentQuestion.options.map((_, idx) => (
+                      <option key={idx} value={idx}>Correct: Option {idx + 1}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Points"
+                    value={currentQuestion.points}
+                    onChange={(e) => setCurrentQuestion({ ...currentQuestion, points: parseInt(e.target.value) })}
+                    className="input"
+                  />
+                </div>
+                <button onClick={addQuestion} className="btn-secondary w-full">
+                  + Add Question
                 </button>
               </div>
             </div>
+
+            <button onClick={handleCreateQuiz} className="btn-primary w-full">
+              Create Quiz with {questions.length} Questions
+            </button>
           </div>
         </div>
       )}

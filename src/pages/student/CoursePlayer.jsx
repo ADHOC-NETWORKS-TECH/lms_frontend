@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getStorage } from "../../utils/storage";
 import VideoPlayer from "../../components/course/VideoPlayer";
 import Loader from "../../components/common/Loader";
+import QuizModal from "../../components/quiz/QuizModal";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -23,13 +24,12 @@ const CoursePlayer = () => {
   const [expandedModules, setExpandedModules] = useState([]);
   const [courseProgress, setCourseProgress] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quiz, setQuiz] = useState(null);
 
-  // Fetch data function - defined outside useEffect so it can be reused
   const fetchData = async () => {
     try {
       const token = getStorage("token");
-
-      // Fetch course details
       const courseRes = await fetch(`${API_URL}/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -42,14 +42,12 @@ const CoursePlayer = () => {
 
       setCourse(courseData.data);
 
-      // Fetch progress
       const progressRes = await fetch(`${API_URL}/progress/course/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const progressData = await progressRes.json();
       setCourseProgress(progressData.data);
 
-      // Mark completed lessons
       const completedMap = {};
       progressData.data?.lessons?.forEach((l) => {
         if (l.completed) completedMap[l.id] = true;
@@ -68,7 +66,6 @@ const CoursePlayer = () => {
       setModules(modulesWithProgress);
       setExpandedModules([modulesWithProgress[0]?.id]);
 
-      // Set first incomplete lesson
       let firstIncomplete = null;
       for (const module of modulesWithProgress) {
         for (const lesson of module.lessons) {
@@ -91,42 +88,45 @@ const CoursePlayer = () => {
     fetchData();
   }, [courseId, navigate]);
 
-  // Mark lesson as complete
   const markComplete = async () => {
     if (!currentLesson) return;
-
     const token = getStorage("token");
     await fetch(`${API_URL}/progress/lesson/${currentLesson.id}/complete`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
-
-    // Refresh data
     await fetchData();
   };
 
-  // Toggle lesson complete/uncomplete
   const handleToggleComplete = async () => {
     if (!currentLesson) return;
-
     const token = getStorage("token");
-    
     if (currentLesson.completed) {
-      // Unmark complete - DELETE request
       await fetch(`${API_URL}/progress/lesson/${currentLesson.id}/complete`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
     } else {
-      // Mark complete - POST request
       await fetch(`${API_URL}/progress/lesson/${currentLesson.id}/complete`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
     }
-
-    // Refresh data
     await fetchData();
+  };
+
+  const handleQuizSubmit = async (answers) => {
+    const token = getStorage("token");
+    const response = await fetch(`${API_URL}/quizzes/${quiz.id}/submit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ answers }),
+    });
+    const data = await response.json();
+    return data.data;
   };
 
   const toggleModule = (moduleId) => {
@@ -142,9 +142,7 @@ const CoursePlayer = () => {
   if (!course || !course.userAccess?.hasAccess) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <p className="text-gray-600 mb-4">
-          You don't have access to this course.
-        </p>
+        <p className="text-gray-600 mb-4">You don't have access to this course.</p>
         <a href="/courses" className="btn-primary inline-block">
           Browse Courses
         </a>
@@ -167,13 +165,12 @@ const CoursePlayer = () => {
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
-                className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-500"
+                className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full"
                 style={{ width: `${courseProgress.percentage}%` }}
               />
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {courseProgress.completedLessons} of {courseProgress.totalLessons}{" "}
-              lessons completed
+              {courseProgress.completedLessons} of {courseProgress.totalLessons} lessons completed
             </p>
           </div>
         )}
@@ -184,9 +181,7 @@ const CoursePlayer = () => {
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden sticky top-20">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-              <h2 className="font-semibold text-gray-800 dark:text-white">
-                Course Content
-              </h2>
+              <h2 className="font-semibold text-gray-800 dark:text-white">Course Content</h2>
             </div>
             <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {modules.map((module) => (
@@ -197,9 +192,7 @@ const CoursePlayer = () => {
                   >
                     <div className="flex items-center gap-2">
                       <FolderIcon className="w-4 h-4 text-gray-400" />
-                      <span className="font-medium text-sm text-gray-800 dark:text-white">
-                        {module.title}
-                      </span>
+                      <span className="font-medium text-sm">{module.title}</span>
                     </div>
                     {expandedModules.includes(module.id) ? (
                       <ChevronUpIcon className="w-4 h-4 text-gray-400" />
@@ -207,7 +200,6 @@ const CoursePlayer = () => {
                       <ChevronDownIcon className="w-4 h-4 text-gray-400" />
                     )}
                   </button>
-
                   {expandedModules.includes(module.id) && (
                     <div className="bg-gray-50 dark:bg-gray-900/50">
                       {module.lessons.map((lesson) => (
@@ -226,15 +218,11 @@ const CoursePlayer = () => {
                             ) : (
                               <PlayCircleIcon className="w-4 h-4 text-gray-400" />
                             )}
-                            <span className="text-sm text-gray-700 dark:text-gray-300">
-                              {lesson.title}
-                            </span>
+                            <span className="text-sm">{lesson.title}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <ClockIcon className="w-3 h-3 text-gray-400" />
-                            <span className="text-xs text-gray-500">
-                              {lesson.duration} min
-                            </span>
+                            <span className="text-xs">{lesson.duration} min</span>
                           </div>
                         </button>
                       ))}
@@ -265,6 +253,31 @@ const CoursePlayer = () => {
           )}
         </div>
       </div>
+
+      {/* Take Quiz Button - Shows only when all lessons completed */}
+      {courseProgress?.percentage === 100 && course?.quizzes?.length > 0 && (
+        <div className="mt-6">
+          <button
+            onClick={() => {
+              setQuiz(course.quizzes[0]);
+              setShowQuiz(true);
+            }}
+            className="btn-primary w-full"
+          >
+            Take Final Quiz
+          </button>
+        </div>
+      )}
+
+      {/* Quiz Modal */}
+      {showQuiz && quiz && (
+        <QuizModal
+          isOpen={showQuiz}
+          onClose={() => setShowQuiz(false)}
+          quiz={quiz}
+          onSubmit={handleQuizSubmit}
+        />
+      )}
     </div>
   );
 };

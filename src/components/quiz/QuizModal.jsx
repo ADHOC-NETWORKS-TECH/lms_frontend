@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
   const [answers, setAnswers] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -17,9 +19,11 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
   };
 
   const handleSubmit = async () => {
+    setLoading(true);
     const response = await onSubmit(answers);
     setResult(response);
     setSubmitted(true);
+    setLoading(false);
   };
 
   if (submitted && result) {
@@ -32,15 +36,26 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
           <h2 className="text-2xl font-bold mb-2">
             {result.passed ? 'Congratulations!' : 'Not this time'}
           </h2>
-          <p className="text-gray-600 mb-4">
-            You scored {result.percentage}% (Passing: {result.passingScore}%)
+          <p className="text-gray-600 mb-2">
+            You scored {result.percentage}%
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            Passing score: {result.passingScore}%
           </p>
           {result.passed ? (
             <button onClick={onClose} className="btn-primary w-full">
               Get Certificate
             </button>
           ) : (
-            <button onClick={() => { setSubmitted(false); setCurrentQuestion(0); setAnswers({}); }} className="btn-primary w-full">
+            <button 
+              onClick={() => { 
+                setSubmitted(false); 
+                setCurrentQuestion(0); 
+                setAnswers({}); 
+                setResult(null);
+              }} 
+              className="btn-primary w-full"
+            >
               Try Again
             </button>
           )}
@@ -57,7 +72,9 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">{quiz.title}</h2>
-            <button onClick={onClose} className="text-gray-500">✕</button>
+            <button onClick={onClose} className="text-gray-500">
+              <XMarkIcon className="w-6 h-6" />
+            </button>
           </div>
           
           <div className="mb-4">
@@ -66,7 +83,10 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
               <span>Time: {quiz.timeLimit} min</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-primary-600 h-2 rounded-full" style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }} />
+              <div 
+                className="bg-primary-600 h-2 rounded-full transition-all" 
+                style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }} 
+              />
             </div>
           </div>
           
@@ -79,8 +99,8 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
                   onClick={() => handleAnswer(question.id, idx)}
                   className={`w-full text-left p-3 border rounded-xl transition ${
                     answers[question.id] === idx
-                      ? 'border-primary-600 bg-primary-50'
-                      : 'border-gray-200 hover:border-primary-300'
+                      ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/30'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
                   }`}
                 >
                   {option}
@@ -90,8 +110,12 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
           </div>
           
           {currentQuestion === quiz.questions.length - 1 && (
-            <button onClick={handleSubmit} className="btn-primary w-full">
-              Submit Quiz
+            <button 
+              onClick={handleSubmit} 
+              disabled={loading}
+              className="btn-primary w-full"
+            >
+              {loading ? 'Submitting...' : 'Submit Quiz'}
             </button>
           )}
         </div>
