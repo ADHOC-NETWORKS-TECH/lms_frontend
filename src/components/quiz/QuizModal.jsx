@@ -10,9 +10,28 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
 
   if (!isOpen) return null;
 
+  // Debug: Log quiz data
+  console.log("QuizModal received quiz:", quiz);
+  console.log("Quiz questions:", quiz?.questions);
+
+  // Get questions array (handle different data structures)
+  const questions = quiz?.questions || [];
+  
+  if (questions.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 text-center">
+          <h2 className="text-xl font-bold mb-4">No Questions Found</h2>
+          <p className="text-gray-600 mb-4">This quiz has no questions yet.</p>
+          <button onClick={onClose} className="btn-primary w-full">Close</button>
+        </div>
+      </div>
+    );
+  }
+
   const handleAnswer = (questionId, answerIndex) => {
     setAnswers({ ...answers, [questionId]: answerIndex });
-    if (currentQuestion < quiz.questions.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     }
   };
@@ -63,7 +82,7 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
     );
   }
 
-  const question = quiz.questions[currentQuestion];
+  const question = questions[currentQuestion];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -78,13 +97,13 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
 
           <div className="mb-4">
             <div className="flex justify-between text-sm text-gray-500 mb-1">
-              <span>Question {currentQuestion + 1} of {quiz.questions.length}</span>
+              <span>Question {currentQuestion + 1} of {questions.length}</span>
               <span>Time: {quiz.timeLimit} min</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-primary-600 h-2 rounded-full transition-all"
-                style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}
+                style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
               />
             </div>
           </div>
@@ -108,7 +127,7 @@ const QuizModal = ({ isOpen, onClose, quiz, onSubmit }) => {
             </div>
           </div>
 
-          {currentQuestion === quiz.questions.length - 1 && (
+          {currentQuestion === questions.length - 1 && (
             <button
               onClick={handleSubmit}
               disabled={loading}

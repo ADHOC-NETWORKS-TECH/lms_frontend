@@ -281,12 +281,30 @@ const CoursePlayer = () => {
         </div>
       </div>
 
-      {courseProgress?.percentage === 100 && course?.quizzes?.length > 0 && (
+      {/* Take Quiz Button - Fetch quiz separately */}
+      {courseProgress?.percentage === 100 && (
         <div className="mt-6">
           <button
-            onClick={() => {
-              setQuiz(course.quizzes[0]);
-              setShowQuiz(true);
+            onClick={async () => {
+              const token = getStorage("token");
+              const response = await fetch(
+                `${API_URL}/quizzes/course/${courseId}`,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                },
+              );
+              const data = await response.json();
+              console.log("Full quiz response:", data);
+              if (data.data && data.data.length > 0) {
+                // Make sure questions are included
+                const quizData = data.data[0];
+                console.log("Selected quiz:", quizData);
+                console.log("Quiz questions:", quizData.questions);
+                setQuiz(quizData);
+                setShowQuiz(true);
+              } else {
+                alert("No quiz found. Please create a quiz in admin panel.");
+              }
             }}
             className="btn-primary w-full"
           >
@@ -294,7 +312,6 @@ const CoursePlayer = () => {
           </button>
         </div>
       )}
-
 
       {/* Quiz Modal */}
       {showQuiz && quiz && (
