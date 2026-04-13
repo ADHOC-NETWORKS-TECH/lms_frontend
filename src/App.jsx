@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
+import VerifyCertificate from "./pages/public/VerifyCertificate";
 
 // Theme Context
 const ThemeContext = createContext();
@@ -86,6 +87,7 @@ function AppRoutes() {
           <Route path="/course/:courseId" element={<CourseDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-certificate/:code" element={<VerifyCertificate />} />
 
           {/* Student Routes */}
           <Route
