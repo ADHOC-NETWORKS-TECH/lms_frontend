@@ -1,27 +1,22 @@
-import React from 'react';
-import { useAuth } from '../../context/AuthContext';
+import React from "react";
+import { useAuth } from "../../context/AuthContext";
+import { Link } from "react-router-dom";
 import { 
   UserCircleIcon, 
   EnvelopeIcon, 
   UserGroupIcon, 
   CalendarIcon,
-  AcademicCapIcon,
+  ArrowRightOnRectangleIcon,
   TrophyIcon,
-  ClockIcon,
-  ArrowRightOnRectangleIcon
-} from '@heroicons/react/24/outline';
+  Cog6ToothIcon,
+  ChevronRightIcon
+} from "@heroicons/react/24/outline";
 
 const Profile = () => {
   const { user, logout } = useAuth();
 
-  const stats = [
-    { label: 'Courses Enrolled', value: '0', icon: AcademicCapIcon, color: 'bg-blue-100 text-blue-600' },
-    { label: 'Certificates', value: '0', icon: TrophyIcon, color: 'bg-yellow-100 text-yellow-600' },
-    { label: 'Hours Learned', value: '0', icon: ClockIcon, color: 'bg-green-100 text-green-600' },
-  ];
-
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pb-20 md:pb-8">
+    <div className="max-w-2xl mx-auto px-4 py-8 pb-20 md:pb-8">
       {/* Profile Header */}
       <div className="relative mb-8">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 rounded-3xl transform -rotate-1 scale-105"></div>
@@ -41,61 +36,91 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-2xl shadow-lg p-5 flex items-center gap-4 border border-gray-100">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.color}`}>
-              <stat.icon className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-              <p className="text-sm text-gray-500">{stat.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Profile Details */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-        <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-          <h2 className="font-semibold text-gray-800">Profile Information</h2>
+      {/* Profile Information Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 mb-6">
+        <div className="border-b border-gray-100 dark:border-gray-700 px-6 py-4">
+          <h2 className="font-semibold text-gray-800 dark:text-white">Profile Information</h2>
         </div>
-        <div className="divide-y divide-gray-100">
-          <div className="flex items-center gap-4 p-6">
-            <UserCircleIcon className="w-6 h-6 text-gray-400" />
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          <div className="flex items-center gap-4 p-5">
+            <UserCircleIcon className="w-5 h-5 text-gray-400" />
             <div className="flex-1">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Full Name</p>
-              <p className="text-gray-800 font-medium mt-1">{user?.name}</p>
+              <p className="text-gray-800 dark:text-white font-medium mt-1">{user?.name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 p-6">
-            <EnvelopeIcon className="w-6 h-6 text-gray-400" />
+          <div className="flex items-center gap-4 p-5">
+            <EnvelopeIcon className="w-5 h-5 text-gray-400" />
             <div className="flex-1">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Email Address</p>
-              <p className="text-gray-800 font-medium mt-1">{user?.email}</p>
+              <p className="text-gray-800 dark:text-white font-medium mt-1">{user?.email}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 p-6">
-            <UserGroupIcon className="w-6 h-6 text-gray-400" />
+          <div className="flex items-center gap-4 p-5">
+            <UserGroupIcon className="w-5 h-5 text-gray-400" />
             <div className="flex-1">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Account Type</p>
-              <p className="text-gray-800 font-medium mt-1 capitalize">{user?.role}</p>
+              <p className="text-gray-800 dark:text-white font-medium mt-1 capitalize">{user?.role}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 p-6">
-            <CalendarIcon className="w-6 h-6 text-gray-400" />
+          <div className="flex items-center gap-4 p-5">
+            <CalendarIcon className="w-5 h-5 text-gray-400" />
             <div className="flex-1">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Member Since</p>
-              <p className="text-gray-800 font-medium mt-1">2024</p>
+              <p className="text-gray-800 dark:text-white font-medium mt-1">2024</p>
             </div>
           </div>
         </div>
-        
-        <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+      </div>
+
+      {/* Quick Actions - Certificates & Settings */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 mb-6">
+        <div className="border-b border-gray-100 dark:border-gray-700 px-6 py-4">
+          <h2 className="font-semibold text-gray-800 dark:text-white">Quick Actions</h2>
+        </div>
+        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          {/* Certificates Link */}
+          <Link 
+            to="/certificates" 
+            className="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center">
+                <TrophyIcon className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-800 dark:text-white">My Certificates</p>
+                <p className="text-xs text-gray-500">View and download your earned certificates</p>
+              </div>
+            </div>
+            <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
+          </Link>
+
+          {/* Settings Link */}
+          <Link 
+            to="/settings" 
+            className="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
+                <Cog6ToothIcon className="w-5 h-5 text-gray-500" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-800 dark:text-white">Settings</p>
+                <p className="text-xs text-gray-500">Dark mode, notifications, and preferences</p>
+              </div>
+            </div>
+            <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Logout Button */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+        <div className="p-5">
           <button
             onClick={logout}
-            className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 px-6 py-3 rounded-xl font-medium hover:bg-red-100 transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-6 py-3 rounded-xl font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
           >
             <ArrowRightOnRectangleIcon className="w-5 h-5" />
             Logout Account

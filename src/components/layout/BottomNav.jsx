@@ -30,8 +30,6 @@ const BottomNav = () => {
     { path: '/dashboard', icon: ChartBarIcon, activeIcon: ChartBarIconSolid, label: 'Dashboard' },
     { path: '/my-courses', icon: BookOpenIcon, activeIcon: BookOpenIconSolid, label: 'Courses' },
     { path: '/profile', icon: UserIcon, activeIcon: UserIconSolid, label: 'Profile' },
-    { path: '/settings', icon: Cog6ToothIcon, activeIcon: Cog6ToothIconSolid, label: 'Settings' },
-    { path: '/certificates', icon: TrophyIcon, activeIcon: TrophyIconSolid, label: 'Certificates' },
   ];
 
   if (isAdmin) {

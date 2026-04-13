@@ -4,11 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import { 
   Bars3Icon, 
   XMarkIcon, 
-  UserCircleIcon, 
   BookOpenIcon, 
   HomeIcon, 
   AcademicCapIcon,
-  Cog6ToothIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
 
@@ -42,46 +40,44 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            <Link to="/" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+            <Link to="/" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center gap-2">
               <HomeIcon className="w-5 h-5" />
               <span>Home</span>
             </Link>
-            <Link to="/courses" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+            <Link to="/courses" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center gap-2">
               <BookOpenIcon className="w-5 h-5" />
               <span>Courses</span>
             </Link>
             
             {isAuthenticated && (
               <>
-                <Link to="/dashboard" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
+                <Link to="/dashboard" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center gap-2">
                   <ChartBarIcon className="w-5 h-5" />
                   <span>Dashboard</span>
                 </Link>
-                <Link to="/my-courses" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200">
+                <Link to="/my-courses" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200">
                   My Courses
                 </Link>
-                <Link to="/profile" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200">
-                  Profile
-                </Link>
-                <Link to="/settings" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 rounded-lg transition-all duration-200 flex items-center gap-2">
-                  <Cog6ToothIcon className="w-5 h-5" />
-                  <span>Settings</span>
-                </Link>
+                {/* REMOVED: Profile and Settings links - now accessible via name click */}
                 {user?.role === 'admin' && (
-                  <Link to="/admin" className="px-4 py-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-all duration-200">
+                  <Link to="/admin" className="px-4 py-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-all duration-200">
                     Admin
                   </Link>
                 )}
                 <div className="ml-4 flex items-center gap-3">
-                  <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full">
+                  {/* Click on name goes to profile */}
+                  <Link 
+                    to="/profile" 
+                    className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+                  >
                     <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm">
                       {user?.name?.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{user?.name}</span>
-                  </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.name}</span>
+                  </Link>
                   <button 
                     onClick={handleLogout} 
-                    className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
+                    className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all duration-200 font-medium"
                   >
                     Logout
                   </button>
@@ -91,7 +87,7 @@ const Header = () => {
 
             {!isAuthenticated && (
               <div className="flex items-center gap-3 ml-4">
-                <Link to="/login" className="px-5 py-2 text-gray-700 hover:text-primary-600 transition-all duration-200 font-medium">
+                <Link to="/login" className="px-5 py-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 transition-all duration-200 font-medium">
                   Login
                 </Link>
                 <Link to="/register" className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-5 py-2 rounded-xl font-medium shadow-md hover:shadow-lg transition-all">
@@ -104,50 +100,48 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button 
             onClick={() => setMenuOpen(!menuOpen)} 
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            {menuOpen ? <XMarkIcon className="w-6 h-6 text-gray-600" /> : <Bars3Icon className="w-6 h-6 text-gray-600" />}
+            {menuOpen ? <XMarkIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" /> : <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-400" />}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {menuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-100 bg-white dark:bg-gray-800">
+          <div className="md:hidden py-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
             <div className="flex flex-col space-y-2">
-              <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <Link to="/" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                 <HomeIcon className="w-5 h-5" />
                 <span>Home</span>
               </Link>
-              <Link to="/courses" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <Link to="/courses" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                 <BookOpenIcon className="w-5 h-5" />
                 <span>Courses</span>
               </Link>
               {isAuthenticated && (
                 <>
-                  <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                     <ChartBarIcon className="w-5 h-5" />
                     <span>Dashboard</span>
                   </Link>
-                  <Link to="/my-courses" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <Link to="/my-courses" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                     <BookOpenIcon className="w-5 h-5" />
                     <span>My Courses</span>
                   </Link>
-                  <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <UserCircleIcon className="w-5 h-5" />
-                    <span>Profile</span>
-                  </Link>
-                  <Link to="/settings" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <Cog6ToothIcon className="w-5 h-5" />
-                    <span>Settings</span>
-                  </Link>
+                  {/* REMOVED: Profile and Settings from mobile menu */}
                   {user?.role === 'admin' && (
                     <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors">
                       <AcademicCapIcon className="w-5 h-5" />
                       <span>Admin</span>
                     </Link>
                   )}
-                  <div className="border-t border-gray-100 dark:border-gray-700 my-2 pt-2">
-                    <div className="flex items-center gap-3 px-4 py-3">
+                  <div className="border-t border-gray-100 dark:border-gray-800 my-2 pt-2">
+                    {/* Name click goes to profile */}
+                    <Link 
+                      to="/profile" 
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                    >
                       <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-white font-bold">
                         {user?.name?.charAt(0).toUpperCase()}
                       </div>
@@ -155,7 +149,7 @@ const Header = () => {
                         <p className="font-medium text-gray-800 dark:text-white">{user?.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
                       </div>
-                    </div>
+                    </Link>
                     <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors font-medium">
                       Logout
                     </button>
