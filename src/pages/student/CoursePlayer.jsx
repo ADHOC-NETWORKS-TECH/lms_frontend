@@ -281,7 +281,7 @@ const CoursePlayer = () => {
         </div>
       </div>
 
-      {/* {courseProgress?.percentage === 100 && course?.quizzes?.length > 0 && (
+      {courseProgress?.percentage === 100 && course?.quizzes?.length > 0 && (
         <div className="mt-6">
           <button
             onClick={() => {
@@ -293,32 +293,8 @@ const CoursePlayer = () => {
             Take Final Quiz
           </button>
         </div>
-      )} */}
+      )}
 
-      {/* Take Quiz Button - Force show for testing */}
-      <div className="mt-6">
-        <button
-          onClick={async () => {
-            const token = getStorage("token");
-            const response = await fetch(
-              `${API_URL}/quizzes/course/${courseId}`,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              },
-            );
-            const data = await response.json();
-            if (data.data && data.data.length > 0) {
-              setQuiz(data.data[0]);
-              setShowQuiz(true);
-            } else {
-              alert("No quiz found. Please create a quiz in admin panel.");
-            }
-          }}
-          className="btn-primary w-full"
-        >
-          Take Final Quiz
-        </button>
-      </div>
 
       {/* Quiz Modal */}
       {showQuiz && quiz && (
