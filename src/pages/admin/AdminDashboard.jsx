@@ -5,6 +5,7 @@ import { getStorage } from "../../utils/storage";
 import {
   PlusIcon,
   TrashIcon,
+  PencilIcon,
   BookOpenIcon,
   UsersIcon,
   CurrencyRupeeIcon,
@@ -33,12 +34,16 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("courses");
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   // Modal states
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showModuleModal, setShowModuleModal] = useState(false);
   const [showLessonModal, setShowLessonModal] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [editType, setEditType] = useState(null);
 
   // Form data
   const [courseForm, setCourseForm] = useState({
@@ -156,6 +161,12 @@ const AdminDashboard = () => {
     }
   };
 
+  // Handle image change
+  const handleImageChange = (url) => {
+    setCourseForm({ ...courseForm, thumbnail: url });
+    setImagePreview(url);
+  };
+
   // Initial data load
   useEffect(() => {
     const loadData = async () => {
@@ -197,6 +208,7 @@ const AdminDashboard = () => {
     setModules([]);
     setLessons([]);
     setQuizzes([]);
+    setImagePreview("");
   };
 
   // Handle back to modules
@@ -209,7 +221,8 @@ const AdminDashboard = () => {
     }
   };
 
-  // Create course
+  // ============ CREATE FUNCTIONS ============
+
   const handleCreateCourse = async () => {
     if (!courseForm.title) {
       alert("Course title is required");
@@ -237,6 +250,7 @@ const AdminDashboard = () => {
         price_6months: 2499,
         thumbnail: "",
       });
+      setImagePreview("");
       await fetchCourses();
       await fetchStats();
     } else {
@@ -244,7 +258,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Create module
   const handleAddModule = async () => {
     if (!moduleForm.title || !selectedCourse) {
       alert("Module title is required");
@@ -276,7 +289,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Create lesson
   const handleAddLesson = async () => {
     if (!lessonForm.title || !lessonForm.videoUrl || !selectedModule) {
       alert("Lesson title and video URL are required");
@@ -314,7 +326,150 @@ const AdminDashboard = () => {
     }
   };
 
-  // Add question to list
+  // ============ EDIT FUNCTIONS ============
+
+  const handleEditCourse = (course) => {
+    setEditItem(course);
+    setEditType("course");
+    setCourseForm({
+      title: course.title,
+      description: course.description || "",
+      price_1month: course.price_1month,
+      price_3months: course.price_3months,
+      price_6months: course.price_6months,
+      thumbnail: course.thumbnail || "",
+    });
+    setImagePreview(course.thumbnail || "");
+    setShowEditModal(true);
+  };
+
+  const handleUpdateCourse = async () => {
+    const token = getStorage("token");
+    const response = await fetch(`${API_URL}/admin/courses/${editItem.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(courseForm),
+    });
+
+    if (response.ok) {
+      alert("Course updated successfully!");
+      setShowEditModal(false);
+      await fetchCourses();
+      if (selectedCourse?.id === editItem.id) {
+        setSelectedCourse({ ...selectedCourse, ...courseForm });
+      }
+    } else {
+      alert("Failed to update course");
+    }
+  };
+
+  const handleEditModule = (module) => {
+    setEditItem(module);
+    setEditType("module");
+    setModuleForm({
+      title: module.title,
+      order: module.order,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateModule = async () => {
+    const token = getStorage("token");
+    const response = await fetch(`${API_URL}/admin/modules/${editItem.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(moduleForm),
+    });
+
+    if (response.ok) {
+      alert("Module updated successfully!");
+      setShowEditModal(false);
+      await fetchModules(selectedCourse.id);
+    } else {
+      alert("Failed to update module");
+    }
+  };
+
+  const handleEditLesson = (lesson) => {
+    setEditItem(lesson);
+    setEditType("lesson");
+    setLessonForm({
+      title: lesson.title,
+      videoUrl: lesson.videoUrl,
+      pdfUrl: lesson.pdfUrl || "",
+      order: lesson.order,
+      duration: lesson.duration,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateLesson = async () => {
+    const token = getStorage("token");
+    const response = await fetch(`${API_URL}/admin/lessons/${editItem.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(lessonForm),
+    });
+
+    if (response.ok) {
+      alert("Lesson updated successfully!");
+      setShowEditModal(false);
+      await fetchLessons(selectedModule.id);
+    } else {
+      alert("Failed to update lesson");
+    }
+  };
+
+  // ============ DELETE FUNCTIONS ============
+
+  const handleDeleteCourse = async (id) => {
+    if (confirm("Delete this course? All modules and lessons will be deleted.")) {
+      const token = getStorage("token");
+      await fetch(`${API_URL}/admin/courses/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (selectedCourse?.id === id) {
+        handleBackToCourses();
+      }
+      await fetchCourses();
+      await fetchStats();
+    }
+  };
+
+  const handleDeleteModule = async (id) => {
+    if (confirm("Delete this module? All lessons will be deleted.")) {
+      const token = getStorage("token");
+      await fetch(`${API_URL}/admin/modules/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchModules(selectedCourse.id);
+    }
+  };
+
+  const handleDeleteLesson = async (id) => {
+    if (confirm("Delete this lesson?")) {
+      const token = getStorage("token");
+      await fetch(`${API_URL}/admin/lessons/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchLessons(selectedModule.id);
+    }
+  };
+
+  // ============ QUIZ FUNCTIONS ============
+
   const addQuestion = () => {
     if (!currentQuestion.questionText) {
       alert("Question text is required");
@@ -334,12 +489,10 @@ const AdminDashboard = () => {
     });
   };
 
-  // Remove question
   const removeQuestion = (index) => {
     setQuestions(questions.filter((_, i) => i !== index));
   };
 
-  // Create quiz
   const handleCreateQuiz = async () => {
     if (!quizForm.title) {
       alert("Quiz title is required");
@@ -386,46 +539,6 @@ const AdminDashboard = () => {
       await fetchQuizzes(selectedCourse.id);
     } else {
       alert("Failed to create quiz");
-    }
-  };
-
-  // Delete course
-  const handleDeleteCourse = async (id) => {
-    if (confirm("Delete this course? All modules and lessons will be deleted.")) {
-      const token = getStorage("token");
-      await fetch(`${API_URL}/admin/courses/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (selectedCourse?.id === id) {
-        handleBackToCourses();
-      }
-      await fetchCourses();
-      await fetchStats();
-    }
-  };
-
-  // Delete module
-  const handleDeleteModule = async (id) => {
-    if (confirm("Delete this module? All lessons will be deleted.")) {
-      const token = getStorage("token");
-      await fetch(`${API_URL}/admin/modules/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      await fetchModules(selectedCourse.id);
-    }
-  };
-
-  // Delete lesson
-  const handleDeleteLesson = async (id) => {
-    if (confirm("Delete this lesson?")) {
-      const token = getStorage("token");
-      await fetch(`${API_URL}/admin/lessons/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      await fetchLessons(selectedModule.id);
     }
   };
 
@@ -542,15 +655,47 @@ const AdminDashboard = () => {
           </button>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {courses.map((course) => (
-              <div key={course.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
-                <h3 className="font-bold text-lg">{course.title}</h3>
-                <p className="text-sm text-gray-500 mt-1">{course.description}</p>
-                <button
-                  onClick={() => handleSelectCourse(course)}
-                  className="mt-4 w-full bg-gray-100 py-2 rounded-lg hover:bg-primary-100 transition"
-                >
-                  Manage Course
-                </button>
+              <div key={course.id} className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden relative">
+                {/* Thumbnail Image */}
+                {course.thumbnail && (
+                  <img 
+                    src={course.thumbnail} 
+                    alt={course.title}
+                    className="w-full h-32 object-cover"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=No+Image' }}
+                  />
+                )}
+                <div className="p-4">
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    <button
+                      onClick={() => handleEditCourse(course)}
+                      className="bg-white rounded-full p-1 shadow text-blue-500 hover:text-blue-600"
+                      title="Edit Course"
+                    >
+                      <PencilIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCourse(course.id)}
+                      className="bg-white rounded-full p-1 shadow text-red-500 hover:text-red-600"
+                      title="Delete Course"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <h3 className="font-bold text-lg pr-12 mt-2">{course.title}</h3>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{course.description}</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">1M: ₹{course.price_1month}</span>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">3M: ₹{course.price_3months}</span>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">6M: ₹{course.price_6months}</span>
+                  </div>
+                  <button
+                    onClick={() => handleSelectCourse(course)}
+                    className="mt-4 w-full bg-gray-100 py-2 rounded-lg hover:bg-primary-100 transition"
+                  >
+                    Manage Course
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -565,8 +710,24 @@ const AdminDashboard = () => {
           </button>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {modules.map((module) => (
-              <div key={module.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
-                <h3 className="font-bold">{module.title}</h3>
+              <div key={module.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 relative">
+                <div className="absolute top-2 right-2 flex gap-1">
+                  <button
+                    onClick={() => handleEditModule(module)}
+                    className="text-blue-500 hover:text-blue-600 p-1"
+                    title="Edit Module"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteModule(module.id)}
+                    className="text-red-500 hover:text-red-600 p-1"
+                    title="Delete Module"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <h3 className="font-bold pr-12">{module.title}</h3>
                 <p className="text-xs text-gray-500 mt-1">Order: {module.order}</p>
                 <button
                   onClick={() => handleSelectModule(module)}
@@ -588,9 +749,30 @@ const AdminDashboard = () => {
           </button>
           <div className="space-y-4">
             {lessons.map((lesson) => (
-              <div key={lesson.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
-                <h3 className="font-bold">{lesson.title}</h3>
-                <p className="text-xs text-gray-500">{lesson.duration} min | Order: {lesson.order}</p>
+              <div key={lesson.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 relative">
+                <div className="absolute top-2 right-2 flex gap-1">
+                  <button
+                    onClick={() => handleEditLesson(lesson)}
+                    className="text-blue-500 hover:text-blue-600 p-1"
+                    title="Edit Lesson"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteLesson(lesson.id)}
+                    className="text-red-500 hover:text-red-600 p-1"
+                    title="Delete Lesson"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <h3 className="font-bold pr-12">{lesson.title}</h3>
+                <p className="text-xs text-gray-500 mt-1">{lesson.duration} min | Order: {lesson.order}</p>
+                {lesson.pdfUrl && (
+                  <a href={lesson.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary-600 text-xs hover:underline mt-2 inline-block">
+                    Download Resources
+                  </a>
+                )}
               </div>
             ))}
           </div>
@@ -629,10 +811,157 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">
+                Edit {editType === "course" ? "Course" : editType === "module" ? "Module" : "Lesson"}
+              </h2>
+              <button onClick={() => setShowEditModal(false)}>
+                <XMarkIcon className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+
+            {editType === "course" && (
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Course Title"
+                  value={courseForm.title}
+                  onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                  className="input"
+                />
+                <textarea
+                  placeholder="Description"
+                  value={courseForm.description}
+                  onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+                  className="input"
+                  rows={3}
+                />
+                
+                {/* Thumbnail field with preview */}
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                    Course Thumbnail (Image URL)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/course-image.jpg"
+                    value={courseForm.thumbnail}
+                    onChange={(e) => handleImageChange(e.target.value)}
+                    className="input"
+                  />
+                  {imagePreview && (
+                    <div className="mt-2">
+                      <img 
+                        src={imagePreview} 
+                        alt="Course preview" 
+                        className="w-full h-32 object-cover rounded-lg border"
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=Invalid+Image+URL' }}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Preview (will appear on course card)</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <input
+                    type="number"
+                    placeholder="1 Month Price"
+                    value={courseForm.price_1month}
+                    onChange={(e) => setCourseForm({ ...courseForm, price_1month: parseInt(e.target.value) })}
+                    className="input"
+                  />
+                  <input
+                    type="number"
+                    placeholder="3 Months Price"
+                    value={courseForm.price_3months}
+                    onChange={(e) => setCourseForm({ ...courseForm, price_3months: parseInt(e.target.value) })}
+                    className="input"
+                  />
+                  <input
+                    type="number"
+                    placeholder="6 Months Price"
+                    value={courseForm.price_6months}
+                    onChange={(e) => setCourseForm({ ...courseForm, price_6months: parseInt(e.target.value) })}
+                    className="input"
+                  />
+                </div>
+                <button onClick={handleUpdateCourse} className="btn-primary w-full">
+                  Update Course
+                </button>
+              </div>
+            )}
+
+            {editType === "module" && (
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Module Title"
+                  value={moduleForm.title}
+                  onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
+                  className="input"
+                />
+                <input
+                  type="number"
+                  placeholder="Order"
+                  value={moduleForm.order}
+                  onChange={(e) => setModuleForm({ ...moduleForm, order: parseInt(e.target.value) })}
+                  className="input"
+                />
+                <button onClick={handleUpdateModule} className="btn-primary w-full">
+                  Update Module
+                </button>
+              </div>
+            )}
+
+            {editType === "lesson" && (
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Lesson Title"
+                  value={lessonForm.title}
+                  onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+                  className="input"
+                />
+                <input
+                  type="text"
+                  placeholder="Video URL"
+                  value={lessonForm.videoUrl}
+                  onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
+                  className="input"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="number"
+                    placeholder="Order"
+                    value={lessonForm.order}
+                    onChange={(e) => setLessonForm({ ...lessonForm, order: parseInt(e.target.value) })}
+                    className="input"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Duration (min)"
+                    value={lessonForm.duration}
+                    onChange={(e) => setLessonForm({ ...lessonForm, duration: parseInt(e.target.value) })}
+                    className="input"
+                  />
+                </div>
+                <button onClick={handleUpdateLesson} className="btn-primary w-full">
+                  Update Lesson
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Course Modal */}
       {showCourseModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Create New Course</h2>
               <button onClick={() => setShowCourseModal(false)}>
@@ -654,6 +983,32 @@ const AdminDashboard = () => {
                 className="input"
                 rows={3}
               />
+              
+              {/* Thumbnail field with preview */}
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                  Course Thumbnail (Image URL)
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://example.com/course-image.jpg"
+                  value={courseForm.thumbnail}
+                  onChange={(e) => handleImageChange(e.target.value)}
+                  className="input"
+                />
+                {imagePreview && (
+                  <div className="mt-2">
+                    <img 
+                      src={imagePreview} 
+                      alt="Course preview" 
+                      className="w-full h-32 object-cover rounded-lg border"
+                      onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=Invalid+Image+URL' }}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Preview (will appear on course card)</p>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-3 gap-3">
                 <input
                   type="number"
