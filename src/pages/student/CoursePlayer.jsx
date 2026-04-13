@@ -26,6 +26,7 @@ const CoursePlayer = () => {
   const [loading, setLoading] = useState(true);
   const [showQuiz, setShowQuiz] = useState(false);
   const [quiz, setQuiz] = useState(null);
+  const [hasCertificate, setHasCertificate] = useState(false);
 
   // Fetch data function
   const fetchData = async () => {
@@ -95,6 +96,7 @@ const CoursePlayer = () => {
 
   useEffect(() => {
     fetchData();
+    checkCertificate();
   }, [courseId, navigate]);
 
   // Mark lesson as complete
@@ -130,6 +132,15 @@ const CoursePlayer = () => {
 
     await fetchData();
   };
+  const checkCertificate = async () => {
+  const token = getStorage("token");
+  const response = await fetch(`${API_URL}/certificates/my`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await response.json();
+  const certificateExists = data.data?.some(cert => cert.courseId === parseInt(courseId));
+  setHasCertificate(certificateExists);
+};
 
   // Handle quiz submission
   const handleQuizSubmit = async (answers) => {
@@ -143,6 +154,22 @@ const CoursePlayer = () => {
       body: JSON.stringify({ answers }),
     });
     const data = await response.json();
+    if (data.data.passed) {
+      console.log("Quiz passed! Generating certificate...");
+      const certResponse = await fetch(
+        `${API_URL}/certificates/generate/${courseId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ quizScore: data.data.percentage }),
+        },
+      );
+      const certData = await certResponse.json();
+      console.log("Certificate generation response:", certData);
+    }
     return data.data;
   };
 
@@ -282,7 +309,7 @@ const CoursePlayer = () => {
       </div>
 
       {/* Take Quiz Button - Fetch quiz separately */}
-      {courseProgress?.percentage === 100 && (
+      {courseProgress?.percentage === 100 && !hasCertificate && (
         <div className="mt-6">
           <button
             onClick={async () => {
