@@ -7,7 +7,8 @@ import {
   BookOpenIcon, 
   HomeIcon, 
   AcademicCapIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 
 const Header = () => {
@@ -56,7 +57,13 @@ const Header = () => {
                   <span>Dashboard</span>
                 </Link>
                 <Link to="/my-courses" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200">
-                  My Courses
+                <BookOpenIcon className="w-5 h-5" />
+                  <span>My Cources</span>
+                </Link>
+                <Link to="/my-doubts" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200">
+                <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                <span>Doubts</span>
+                  Doubts
                 </Link>
                 {/* REMOVED: Profile and Settings links - now accessible via name click */}
                 {user?.role === 'admin' && (

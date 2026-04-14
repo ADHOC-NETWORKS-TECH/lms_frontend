@@ -31,8 +31,8 @@ const BottomNav = () => {
     { path: '/', icon: HomeIcon, activeIcon: HomeIconSolid, label: 'Home' },
     { path: '/dashboard', icon: ChartBarIcon, activeIcon: ChartBarIconSolid, label: 'Dashboard' },
     { path: '/my-courses', icon: BookOpenIcon, activeIcon: BookOpenIconSolid, label: 'Courses' },
-    { path: '/profile', icon: UserIcon, activeIcon: UserIconSolid, label: 'Profile' },
     { path: '/my-doubts', icon: ChatBubbleLeftRightIcon, activeIcon: ChatBubbleLeftRightIconSolid, label: 'Doubts' },
+    { path: '/profile', icon: UserIcon, activeIcon: UserIconSolid, label: 'Profile' },  
   ];
 
   if (isAdmin) {
