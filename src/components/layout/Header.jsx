@@ -63,7 +63,6 @@ const Header = () => {
                 <Link to="/my-doubts" className="px-4 py-2 text-black dark:text-white hover:text-primary-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200">
                 <ChatBubbleLeftRightIcon className="w-5 h-5" />
                 <span>Doubts</span>
-                  Doubts
                 </Link>
                 {/* REMOVED: Profile and Settings links - now accessible via name click */}
                 {user?.role === 'admin' && (
