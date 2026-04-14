@@ -11,6 +11,10 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
 import VerifyCertificate from "./pages/public/VerifyCertificate";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import MyDoubts from "./pages/student/MyDoubts";
+import AdminDoubts from "./pages/admin/AdminDoubts";
 
 // Theme Context
 const ThemeContext = createContext();
@@ -87,8 +91,12 @@ function AppRoutes() {
           <Route path="/course/:courseId" element={<CourseDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/verify-certificate/:code" element={<VerifyCertificate />} />
-
+          <Route
+            path="/verify-certificate/:code"
+            element={<VerifyCertificate />}
+          />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           {/* Student Routes */}
           <Route
             path="/dashboard"
@@ -138,7 +146,6 @@ function AppRoutes() {
               </ProtectedRoute>
             }
           />
-
           {/* Admin Routes */}
           <Route
             path="/admin"
@@ -153,6 +160,24 @@ function AppRoutes() {
             element={
               <ProtectedRoute adminOnly>
                 <Analytics />
+              </ProtectedRoute>
+            }
+          />
+          // Add student route
+          <Route
+            path="/my-doubts"
+            element={
+              <ProtectedRoute>
+                <MyDoubts />
+              </ProtectedRoute>
+            }
+          />
+          // Add admin route
+          <Route
+            path="/admin/doubts"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminDoubts />
               </ProtectedRoute>
             }
           />

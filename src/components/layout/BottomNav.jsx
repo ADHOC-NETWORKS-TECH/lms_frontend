@@ -8,7 +8,8 @@ import {
   Cog6ToothIcon,
   ShieldCheckIcon,
   ChartBarIcon,
-  TrophyIcon  // ← ADD THIS
+  TrophyIcon, // ← ADD THIS
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { 
   HomeIcon as HomeIconSolid,
@@ -17,7 +18,8 @@ import {
   Cog6ToothIcon as Cog6ToothIconSolid,
   ShieldCheckIcon as ShieldCheckIconSolid,
   ChartBarIcon as ChartBarIconSolid,
-  TrophyIcon as TrophyIconSolid  // ← ADD THIS
+  TrophyIcon as TrophyIconSolid,  // ← ADD THIS
+  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid
 } from '@heroicons/react/24/solid';
 
 const BottomNav = () => {
@@ -30,6 +32,7 @@ const BottomNav = () => {
     { path: '/dashboard', icon: ChartBarIcon, activeIcon: ChartBarIconSolid, label: 'Dashboard' },
     { path: '/my-courses', icon: BookOpenIcon, activeIcon: BookOpenIconSolid, label: 'Courses' },
     { path: '/profile', icon: UserIcon, activeIcon: UserIconSolid, label: 'Profile' },
+    { path: '/my-doubts', icon: ChatBubbleLeftRightIcon, activeIcon: ChatBubbleLeftRightIconSolid, label: 'Doubts' },
   ];
 
   if (isAdmin) {

@@ -4,6 +4,8 @@ import { getStorage } from "../../utils/storage";
 import VideoPlayer from "../../components/course/VideoPlayer";
 import Loader from "../../components/common/Loader";
 import QuizModal from "../../components/quiz/QuizModal";
+import RaiseDoubtModal from "../../components/doubt/RaiseDoubtModal";
+
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -11,6 +13,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   FolderIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 
 const API_URL = "https://lms-backend-g1cy.onrender.com/api";
@@ -27,6 +30,7 @@ const CoursePlayer = () => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quiz, setQuiz] = useState(null);
   const [hasCertificate, setHasCertificate] = useState(false);
+  const [showDoubtModal, setShowDoubtModal] = useState(false);
 
   // Fetch data function
   const fetchData = async () => {
@@ -133,14 +137,16 @@ const CoursePlayer = () => {
     await fetchData();
   };
   const checkCertificate = async () => {
-  const token = getStorage("token");
-  const response = await fetch(`${API_URL}/certificates/my`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const data = await response.json();
-  const certificateExists = data.data?.some(cert => cert.courseId === parseInt(courseId));
-  setHasCertificate(certificateExists);
-};
+    const token = getStorage("token");
+    const response = await fetch(`${API_URL}/certificates/my`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await response.json();
+    const certificateExists = data.data?.some(
+      (cert) => cert.courseId === parseInt(courseId),
+    );
+    setHasCertificate(certificateExists);
+  };
 
   // Handle quiz submission
   const handleQuizSubmit = async (answers) => {
@@ -307,6 +313,13 @@ const CoursePlayer = () => {
           )}
         </div>
       </div>
+      <button
+        onClick={() => setShowDoubtModal(true)}
+        className="btn-secondary w-full mt-3 flex items-center justify-center gap-2"
+      >
+        <QuestionMarkCircleIcon className="w-5 h-5" />
+        Raise a Doubt
+      </button>
 
       {/* Take Quiz Button - Fetch quiz separately */}
       {courseProgress?.percentage === 100 && !hasCertificate && (
@@ -349,6 +362,15 @@ const CoursePlayer = () => {
           onSubmit={handleQuizSubmit}
         />
       )}
+
+      <RaiseDoubtModal
+        isOpen={showDoubtModal}
+        onClose={() => setShowDoubtModal(false)}
+        courseId={parseInt(courseId)}
+        courseTitle={course?.title}
+        lessonId={currentLesson?.id}
+        lessonTitle={currentLesson?.title}
+      />
     </div>
   );
 };

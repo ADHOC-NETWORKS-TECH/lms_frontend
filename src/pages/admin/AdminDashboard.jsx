@@ -19,6 +19,7 @@ import {
   ArrowLeftIcon,
   ChartBarIcon,
   QuestionMarkCircleIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 
 const API_URL = "https://lms-backend-g1cy.onrender.com/api";
@@ -123,7 +124,7 @@ const AdminDashboard = () => {
       });
       const data = await response.json();
       const foundModule = (data.data?.modules || []).find(
-        (m) => m.id === moduleId
+        (m) => m.id === moduleId,
       );
       setLessons(foundModule?.lessons || []);
     } catch (error) {
@@ -274,7 +275,7 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(moduleForm),
-      }
+      },
     );
 
     if (response.ok) {
@@ -305,7 +306,7 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(lessonForm),
-      }
+      },
     );
 
     if (response.ok) {
@@ -432,7 +433,9 @@ const AdminDashboard = () => {
   // ============ DELETE FUNCTIONS ============
 
   const handleDeleteCourse = async (id) => {
-    if (confirm("Delete this course? All modules and lessons will be deleted.")) {
+    if (
+      confirm("Delete this course? All modules and lessons will be deleted.")
+    ) {
       const token = getStorage("token");
       await fetch(`${API_URL}/admin/courses/${id}`, {
         method: "DELETE",
@@ -543,7 +546,11 @@ const AdminDashboard = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
   }
 
   return (
@@ -559,13 +566,20 @@ const AdminDashboard = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <Link to="/admin/analytics" className="btn-secondary flex items-center gap-2">
+          <Link
+            to="/admin/analytics"
+            className="btn-secondary flex items-center gap-2"
+          >
             <ChartBarIcon className="w-5 h-5" />
             Analytics
           </Link>
-          <button onClick={logout} className="text-red-600 hover:text-red-700">
-            Logout
-          </button>
+          <Link
+            to="/admin/doubts"
+            className="btn-secondary flex items-center gap-2"
+          >
+            <ChatBubbleLeftRightIcon className="w-5 h-5" />
+            Doubts
+          </Link>
         </div>
       </div>
 
@@ -588,7 +602,9 @@ const AdminDashboard = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex items-center gap-3">
           <AcademicCapIcon className="w-8 h-8 text-primary-500" />
           <div>
-            <p className="text-2xl font-bold">{stats?.subscriptions?.active || 0}</p>
+            <p className="text-2xl font-bold">
+              {stats?.subscriptions?.active || 0}
+            </p>
             <p className="text-sm text-gray-500">Active Subscriptions</p>
           </div>
         </div>
@@ -629,20 +645,27 @@ const AdminDashboard = () => {
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <button onClick={handleBackToCourses} className="flex items-center gap-1 hover:text-primary-600">
+        <button
+          onClick={handleBackToCourses}
+          className="flex items-center gap-1 hover:text-primary-600"
+        >
           <ArrowLeftIcon className="w-4 h-4" />
           Courses
         </button>
         {selectedCourse && (
           <>
             <ChevronRightIcon className="w-4 h-4" />
-            <span className="text-gray-800 dark:text-white font-medium">{selectedCourse.title}</span>
+            <span className="text-gray-800 dark:text-white font-medium">
+              {selectedCourse.title}
+            </span>
           </>
         )}
         {selectedModule && activeTab === "lessons" && (
           <>
             <ChevronRightIcon className="w-4 h-4" />
-            <span className="text-gray-800 dark:text-white font-medium">{selectedModule.title}</span>
+            <span className="text-gray-800 dark:text-white font-medium">
+              {selectedModule.title}
+            </span>
           </>
         )}
       </div>
@@ -650,19 +673,28 @@ const AdminDashboard = () => {
       {/* Courses Tab */}
       {activeTab === "courses" && (
         <div>
-          <button onClick={() => setShowCourseModal(true)} className="btn-primary mb-6 flex items-center gap-2">
+          <button
+            onClick={() => setShowCourseModal(true)}
+            className="btn-primary mb-6 flex items-center gap-2"
+          >
             <PlusIcon className="w-5 h-5" /> Add New Course
           </button>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {courses.map((course) => (
-              <div key={course.id} className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden relative">
+              <div
+                key={course.id}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden relative"
+              >
                 {/* Thumbnail Image */}
                 {course.thumbnail && (
-                  <img 
-                    src={course.thumbnail} 
+                  <img
+                    src={course.thumbnail}
                     alt={course.title}
                     className="w-full h-32 object-cover"
-                    onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=No+Image' }}
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/400x200?text=No+Image";
+                    }}
                   />
                 )}
                 <div className="p-4">
@@ -682,12 +714,22 @@ const AdminDashboard = () => {
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   </div>
-                  <h3 className="font-bold text-lg pr-12 mt-2">{course.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{course.description}</p>
+                  <h3 className="font-bold text-lg pr-12 mt-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                    {course.description}
+                  </p>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">1M: ₹{course.price_1month}</span>
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">3M: ₹{course.price_3months}</span>
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">6M: ₹{course.price_6months}</span>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      1M: ₹{course.price_1month}
+                    </span>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      3M: ₹{course.price_3months}
+                    </span>
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      6M: ₹{course.price_6months}
+                    </span>
                   </div>
                   <button
                     onClick={() => handleSelectCourse(course)}
@@ -705,12 +747,18 @@ const AdminDashboard = () => {
       {/* Modules Tab */}
       {activeTab === "modules" && selectedCourse && (
         <div>
-          <button onClick={() => setShowModuleModal(true)} className="btn-primary mb-6 flex items-center gap-2">
+          <button
+            onClick={() => setShowModuleModal(true)}
+            className="btn-primary mb-6 flex items-center gap-2"
+          >
             <PlusIcon className="w-5 h-5" /> Add Module
           </button>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {modules.map((module) => (
-              <div key={module.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 relative">
+              <div
+                key={module.id}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 relative"
+              >
                 <div className="absolute top-2 right-2 flex gap-1">
                   <button
                     onClick={() => handleEditModule(module)}
@@ -728,7 +776,9 @@ const AdminDashboard = () => {
                   </button>
                 </div>
                 <h3 className="font-bold pr-12">{module.title}</h3>
-                <p className="text-xs text-gray-500 mt-1">Order: {module.order}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Order: {module.order}
+                </p>
                 <button
                   onClick={() => handleSelectModule(module)}
                   className="mt-4 w-full bg-gray-100 py-2 rounded-lg hover:bg-primary-100 transition"
@@ -744,12 +794,18 @@ const AdminDashboard = () => {
       {/* Lessons Tab */}
       {activeTab === "lessons" && selectedModule && (
         <div>
-          <button onClick={() => setShowLessonModal(true)} className="btn-primary mb-6 flex items-center gap-2">
+          <button
+            onClick={() => setShowLessonModal(true)}
+            className="btn-primary mb-6 flex items-center gap-2"
+          >
             <PlusIcon className="w-5 h-5" /> Add Lesson
           </button>
           <div className="space-y-4">
             {lessons.map((lesson) => (
-              <div key={lesson.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 relative">
+              <div
+                key={lesson.id}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 relative"
+              >
                 <div className="absolute top-2 right-2 flex gap-1">
                   <button
                     onClick={() => handleEditLesson(lesson)}
@@ -767,9 +823,16 @@ const AdminDashboard = () => {
                   </button>
                 </div>
                 <h3 className="font-bold pr-12">{lesson.title}</h3>
-                <p className="text-xs text-gray-500 mt-1">{lesson.duration} min | Order: {lesson.order}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {lesson.duration} min | Order: {lesson.order}
+                </p>
                 {lesson.pdfUrl && (
-                  <a href={lesson.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary-600 text-xs hover:underline mt-2 inline-block">
+                  <a
+                    href={lesson.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-600 text-xs hover:underline mt-2 inline-block"
+                  >
                     Download Resources
                   </a>
                 )}
@@ -782,18 +845,26 @@ const AdminDashboard = () => {
       {/* Quizzes Tab */}
       {activeTab === "quizzes" && selectedCourse && (
         <div>
-          <button onClick={() => setShowQuizModal(true)} className="btn-primary mb-6 flex items-center gap-2">
+          <button
+            onClick={() => setShowQuizModal(true)}
+            className="btn-primary mb-6 flex items-center gap-2"
+          >
             <PlusIcon className="w-5 h-5" /> Create Quiz
           </button>
           <div className="space-y-4">
             {quizzes.length === 0 ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
                 <QuestionMarkCircleIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500">No quizzes yet. Click "Create Quiz" to add one.</p>
+                <p className="text-gray-500">
+                  No quizzes yet. Click "Create Quiz" to add one.
+                </p>
               </div>
             ) : (
               quizzes.map((quiz) => (
-                <div key={quiz.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                <div
+                  key={quiz.id}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow p-4"
+                >
                   <h3 className="font-bold text-lg">{quiz.title}</h3>
                   <p className="text-sm text-gray-500">{quiz.description}</p>
                   <div className="flex gap-3 mt-2">
@@ -817,7 +888,12 @@ const AdminDashboard = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">
-                Edit {editType === "course" ? "Course" : editType === "module" ? "Module" : "Lesson"}
+                Edit{" "}
+                {editType === "course"
+                  ? "Course"
+                  : editType === "module"
+                    ? "Module"
+                    : "Lesson"}
               </h2>
               <button onClick={() => setShowEditModal(false)}>
                 <XMarkIcon className="w-6 h-6 text-gray-500" />
@@ -830,17 +906,24 @@ const AdminDashboard = () => {
                   type="text"
                   placeholder="Course Title"
                   value={courseForm.title}
-                  onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setCourseForm({ ...courseForm, title: e.target.value })
+                  }
                   className="input"
                 />
                 <textarea
                   placeholder="Description"
                   value={courseForm.description}
-                  onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setCourseForm({
+                      ...courseForm,
+                      description: e.target.value,
+                    })
+                  }
                   className="input"
                   rows={3}
                 />
-                
+
                 {/* Thumbnail field with preview */}
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
@@ -855,13 +938,18 @@ const AdminDashboard = () => {
                   />
                   {imagePreview && (
                     <div className="mt-2">
-                      <img 
-                        src={imagePreview} 
-                        alt="Course preview" 
+                      <img
+                        src={imagePreview}
+                        alt="Course preview"
                         className="w-full h-32 object-cover rounded-lg border"
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=Invalid+Image+URL' }}
+                        onError={(e) => {
+                          e.target.src =
+                            "https://via.placeholder.com/400x200?text=Invalid+Image+URL";
+                        }}
                       />
-                      <p className="text-xs text-gray-500 mt-1">Preview (will appear on course card)</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Preview (will appear on course card)
+                      </p>
                     </div>
                   )}
                 </div>
@@ -871,25 +959,43 @@ const AdminDashboard = () => {
                     type="number"
                     placeholder="1 Month Price"
                     value={courseForm.price_1month}
-                    onChange={(e) => setCourseForm({ ...courseForm, price_1month: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setCourseForm({
+                        ...courseForm,
+                        price_1month: parseInt(e.target.value),
+                      })
+                    }
                     className="input"
                   />
                   <input
                     type="number"
                     placeholder="3 Months Price"
                     value={courseForm.price_3months}
-                    onChange={(e) => setCourseForm({ ...courseForm, price_3months: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setCourseForm({
+                        ...courseForm,
+                        price_3months: parseInt(e.target.value),
+                      })
+                    }
                     className="input"
                   />
                   <input
                     type="number"
                     placeholder="6 Months Price"
                     value={courseForm.price_6months}
-                    onChange={(e) => setCourseForm({ ...courseForm, price_6months: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setCourseForm({
+                        ...courseForm,
+                        price_6months: parseInt(e.target.value),
+                      })
+                    }
                     className="input"
                   />
                 </div>
-                <button onClick={handleUpdateCourse} className="btn-primary w-full">
+                <button
+                  onClick={handleUpdateCourse}
+                  className="btn-primary w-full"
+                >
                   Update Course
                 </button>
               </div>
@@ -901,17 +1007,27 @@ const AdminDashboard = () => {
                   type="text"
                   placeholder="Module Title"
                   value={moduleForm.title}
-                  onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setModuleForm({ ...moduleForm, title: e.target.value })
+                  }
                   className="input"
                 />
                 <input
                   type="number"
                   placeholder="Order"
                   value={moduleForm.order}
-                  onChange={(e) => setModuleForm({ ...moduleForm, order: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setModuleForm({
+                      ...moduleForm,
+                      order: parseInt(e.target.value),
+                    })
+                  }
                   className="input"
                 />
-                <button onClick={handleUpdateModule} className="btn-primary w-full">
+                <button
+                  onClick={handleUpdateModule}
+                  className="btn-primary w-full"
+                >
                   Update Module
                 </button>
               </div>
@@ -923,14 +1039,18 @@ const AdminDashboard = () => {
                   type="text"
                   placeholder="Lesson Title"
                   value={lessonForm.title}
-                  onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setLessonForm({ ...lessonForm, title: e.target.value })
+                  }
                   className="input"
                 />
                 <input
                   type="text"
                   placeholder="Video URL"
                   value={lessonForm.videoUrl}
-                  onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
+                  onChange={(e) =>
+                    setLessonForm({ ...lessonForm, videoUrl: e.target.value })
+                  }
                   className="input"
                 />
                 <div className="grid grid-cols-2 gap-3">
@@ -938,18 +1058,31 @@ const AdminDashboard = () => {
                     type="number"
                     placeholder="Order"
                     value={lessonForm.order}
-                    onChange={(e) => setLessonForm({ ...lessonForm, order: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setLessonForm({
+                        ...lessonForm,
+                        order: parseInt(e.target.value),
+                      })
+                    }
                     className="input"
                   />
                   <input
                     type="number"
                     placeholder="Duration (min)"
                     value={lessonForm.duration}
-                    onChange={(e) => setLessonForm({ ...lessonForm, duration: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setLessonForm({
+                        ...lessonForm,
+                        duration: parseInt(e.target.value),
+                      })
+                    }
                     className="input"
                   />
                 </div>
-                <button onClick={handleUpdateLesson} className="btn-primary w-full">
+                <button
+                  onClick={handleUpdateLesson}
+                  className="btn-primary w-full"
+                >
                   Update Lesson
                 </button>
               </div>
@@ -973,17 +1106,21 @@ const AdminDashboard = () => {
                 type="text"
                 placeholder="Course Title"
                 value={courseForm.title}
-                onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                onChange={(e) =>
+                  setCourseForm({ ...courseForm, title: e.target.value })
+                }
                 className="input"
               />
               <textarea
                 placeholder="Description"
                 value={courseForm.description}
-                onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+                onChange={(e) =>
+                  setCourseForm({ ...courseForm, description: e.target.value })
+                }
                 className="input"
                 rows={3}
               />
-              
+
               {/* Thumbnail field with preview */}
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
@@ -998,13 +1135,18 @@ const AdminDashboard = () => {
                 />
                 {imagePreview && (
                   <div className="mt-2">
-                    <img 
-                      src={imagePreview} 
-                      alt="Course preview" 
+                    <img
+                      src={imagePreview}
+                      alt="Course preview"
                       className="w-full h-32 object-cover rounded-lg border"
-                      onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=Invalid+Image+URL' }}
+                      onError={(e) => {
+                        e.target.src =
+                          "https://via.placeholder.com/400x200?text=Invalid+Image+URL";
+                      }}
                     />
-                    <p className="text-xs text-gray-500 mt-1">Preview (will appear on course card)</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Preview (will appear on course card)
+                    </p>
                   </div>
                 )}
               </div>
@@ -1014,25 +1156,43 @@ const AdminDashboard = () => {
                   type="number"
                   placeholder="1 Month Price"
                   value={courseForm.price_1month}
-                  onChange={(e) => setCourseForm({ ...courseForm, price_1month: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setCourseForm({
+                      ...courseForm,
+                      price_1month: parseInt(e.target.value),
+                    })
+                  }
                   className="input"
                 />
                 <input
                   type="number"
                   placeholder="3 Months Price"
                   value={courseForm.price_3months}
-                  onChange={(e) => setCourseForm({ ...courseForm, price_3months: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setCourseForm({
+                      ...courseForm,
+                      price_3months: parseInt(e.target.value),
+                    })
+                  }
                   className="input"
                 />
                 <input
                   type="number"
                   placeholder="6 Months Price"
                   value={courseForm.price_6months}
-                  onChange={(e) => setCourseForm({ ...courseForm, price_6months: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setCourseForm({
+                      ...courseForm,
+                      price_6months: parseInt(e.target.value),
+                    })
+                  }
                   className="input"
                 />
               </div>
-              <button onClick={handleCreateCourse} className="btn-primary w-full">
+              <button
+                onClick={handleCreateCourse}
+                className="btn-primary w-full"
+              >
                 Create Course
               </button>
             </div>
@@ -1045,7 +1205,9 @@ const AdminDashboard = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Add Module to "{selectedCourse?.title}"</h2>
+              <h2 className="text-xl font-bold">
+                Add Module to "{selectedCourse?.title}"
+              </h2>
               <button onClick={() => setShowModuleModal(false)}>
                 <XMarkIcon className="w-6 h-6 text-gray-500" />
               </button>
@@ -1055,14 +1217,21 @@ const AdminDashboard = () => {
                 type="text"
                 placeholder="Module Title"
                 value={moduleForm.title}
-                onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
+                onChange={(e) =>
+                  setModuleForm({ ...moduleForm, title: e.target.value })
+                }
                 className="input"
               />
               <input
                 type="number"
                 placeholder="Order"
                 value={moduleForm.order}
-                onChange={(e) => setModuleForm({ ...moduleForm, order: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setModuleForm({
+                    ...moduleForm,
+                    order: parseInt(e.target.value),
+                  })
+                }
                 className="input"
               />
               <button onClick={handleAddModule} className="btn-primary w-full">
@@ -1078,7 +1247,9 @@ const AdminDashboard = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Add Lesson to "{selectedModule?.title}"</h2>
+              <h2 className="text-xl font-bold">
+                Add Lesson to "{selectedModule?.title}"
+              </h2>
               <button onClick={() => setShowLessonModal(false)}>
                 <XMarkIcon className="w-6 h-6 text-gray-500" />
               </button>
@@ -1088,14 +1259,18 @@ const AdminDashboard = () => {
                 type="text"
                 placeholder="Lesson Title"
                 value={lessonForm.title}
-                onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+                onChange={(e) =>
+                  setLessonForm({ ...lessonForm, title: e.target.value })
+                }
                 className="input"
               />
               <input
                 type="text"
                 placeholder="Video URL"
                 value={lessonForm.videoUrl}
-                onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
+                onChange={(e) =>
+                  setLessonForm({ ...lessonForm, videoUrl: e.target.value })
+                }
                 className="input"
               />
               <div className="grid grid-cols-2 gap-3">
@@ -1103,14 +1278,24 @@ const AdminDashboard = () => {
                   type="number"
                   placeholder="Order"
                   value={lessonForm.order}
-                  onChange={(e) => setLessonForm({ ...lessonForm, order: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setLessonForm({
+                      ...lessonForm,
+                      order: parseInt(e.target.value),
+                    })
+                  }
                   className="input"
                 />
                 <input
                   type="number"
                   placeholder="Duration (min)"
                   value={lessonForm.duration}
-                  onChange={(e) => setLessonForm({ ...lessonForm, duration: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setLessonForm({
+                      ...lessonForm,
+                      duration: parseInt(e.target.value),
+                    })
+                  }
                   className="input"
                 />
               </div>
@@ -1127,7 +1312,9 @@ const AdminDashboard = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Create Quiz for "{selectedCourse?.title}"</h2>
+              <h2 className="text-xl font-bold">
+                Create Quiz for "{selectedCourse?.title}"
+              </h2>
               <button onClick={() => setShowQuizModal(false)}>
                 <XMarkIcon className="w-6 h-6 text-gray-500" />
               </button>
@@ -1140,13 +1327,17 @@ const AdminDashboard = () => {
                 type="text"
                 placeholder="Quiz Title"
                 value={quizForm.title}
-                onChange={(e) => setQuizForm({ ...quizForm, title: e.target.value })}
+                onChange={(e) =>
+                  setQuizForm({ ...quizForm, title: e.target.value })
+                }
                 className="input"
               />
               <textarea
                 placeholder="Description"
                 value={quizForm.description}
-                onChange={(e) => setQuizForm({ ...quizForm, description: e.target.value })}
+                onChange={(e) =>
+                  setQuizForm({ ...quizForm, description: e.target.value })
+                }
                 className="input"
                 rows={2}
               />
@@ -1155,14 +1346,24 @@ const AdminDashboard = () => {
                   type="number"
                   placeholder="Passing Score (%)"
                   value={quizForm.passingScore}
-                  onChange={(e) => setQuizForm({ ...quizForm, passingScore: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setQuizForm({
+                      ...quizForm,
+                      passingScore: parseInt(e.target.value),
+                    })
+                  }
                   className="input"
                 />
                 <input
                   type="number"
                   placeholder="Time Limit (minutes)"
                   value={quizForm.timeLimit}
-                  onChange={(e) => setQuizForm({ ...quizForm, timeLimit: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setQuizForm({
+                      ...quizForm,
+                      timeLimit: parseInt(e.target.value),
+                    })
+                  }
                   className="input"
                 />
               </div>
@@ -1174,8 +1375,13 @@ const AdminDashboard = () => {
               {questions.map((q, idx) => (
                 <div key={idx} className="bg-gray-50 p-3 rounded-lg">
                   <div className="flex justify-between">
-                    <p className="font-medium">Q{idx + 1}: {q.questionText}</p>
-                    <button onClick={() => removeQuestion(idx)} className="text-red-500">
+                    <p className="font-medium">
+                      Q{idx + 1}: {q.questionText}
+                    </p>
+                    <button
+                      onClick={() => removeQuestion(idx)}
+                      className="text-red-500"
+                    >
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   </div>
@@ -1189,7 +1395,12 @@ const AdminDashboard = () => {
                   type="text"
                   placeholder="Question text"
                   value={currentQuestion.questionText}
-                  onChange={(e) => setCurrentQuestion({ ...currentQuestion, questionText: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentQuestion({
+                      ...currentQuestion,
+                      questionText: e.target.value,
+                    })
+                  }
                   className="input mb-3"
                 />
                 {currentQuestion.options.map((opt, idx) => (
@@ -1201,7 +1412,10 @@ const AdminDashboard = () => {
                     onChange={(e) => {
                       const newOptions = [...currentQuestion.options];
                       newOptions[idx] = e.target.value;
-                      setCurrentQuestion({ ...currentQuestion, options: newOptions });
+                      setCurrentQuestion({
+                        ...currentQuestion,
+                        options: newOptions,
+                      });
                     }}
                     className="input mb-2"
                   />
@@ -1209,18 +1423,30 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <select
                     value={currentQuestion.correctAnswer}
-                    onChange={(e) => setCurrentQuestion({ ...currentQuestion, correctAnswer: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setCurrentQuestion({
+                        ...currentQuestion,
+                        correctAnswer: parseInt(e.target.value),
+                      })
+                    }
                     className="input"
                   >
                     {currentQuestion.options.map((_, idx) => (
-                      <option key={idx} value={idx}>Correct: Option {idx + 1}</option>
+                      <option key={idx} value={idx}>
+                        Correct: Option {idx + 1}
+                      </option>
                     ))}
                   </select>
                   <input
                     type="number"
                     placeholder="Points"
                     value={currentQuestion.points}
-                    onChange={(e) => setCurrentQuestion({ ...currentQuestion, points: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setCurrentQuestion({
+                        ...currentQuestion,
+                        points: parseInt(e.target.value),
+                      })
+                    }
                     className="input"
                   />
                 </div>
