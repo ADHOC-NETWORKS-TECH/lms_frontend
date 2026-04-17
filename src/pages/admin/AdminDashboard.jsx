@@ -165,23 +165,18 @@ const AdminDashboard = () => {
 
       console.log("Quizzes API response:", data);
 
-      // Check if response is successful
       if (!data.success) {
         console.error("API returned error:", data.message);
         setQuizzes([]);
         return;
       }
 
-      // Extract quizzes from the nested structure
       let allQuizzes = [];
 
       if (data.data) {
-        // Add module quizzes
         if (data.data.moduleQuizzes && Array.isArray(data.data.moduleQuizzes)) {
           allQuizzes = [...allQuizzes, ...data.data.moduleQuizzes];
         }
-
-        // Add final quiz if exists
         if (data.data.finalQuiz) {
           allQuizzes.push(data.data.finalQuiz);
         }
@@ -520,7 +515,6 @@ const AdminDashboard = () => {
 
   // ============ QUIZ FUNCTIONS ============
 
-  // Reset quiz modal state when opening
   const openQuizModal = () => {
     setQuizType("final");
     setSelectedModuleForQuiz(null);
@@ -571,7 +565,6 @@ const AdminDashboard = () => {
 
     const token = getStorage("token");
 
-    // Use quizData with the selected values
     const quizData = {
       courseId: selectedCourse.id,
       moduleId: quizType === "module" ? selectedModuleForQuiz : null,
@@ -1025,6 +1018,308 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      {/* Course Modal */}
+      {showCourseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Create New Course</h2>
+                <button onClick={() => setShowCourseModal(false)}>
+                  <XMarkIcon className="w-6 h-6 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Course Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Course Title"
+                    value={courseForm.title}
+                    onChange={(e) =>
+                      setCourseForm({ ...courseForm, title: e.target.value })
+                    }
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    placeholder="Description"
+                    value={courseForm.description}
+                    onChange={(e) =>
+                      setCourseForm({
+                        ...courseForm,
+                        description: e.target.value,
+                      })
+                    }
+                    className="input"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Thumbnail URL
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Thumbnail URL"
+                    value={courseForm.thumbnail}
+                    onChange={(e) => handleImageChange(e.target.value)}
+                    className="input"
+                  />
+                  {imagePreview && (
+                    <div className="mt-2">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      1 Month Price
+                    </label>
+                    <input
+                      type="number"
+                      value={courseForm.price_1month}
+                      onChange={(e) =>
+                        setCourseForm({
+                          ...courseForm,
+                          price_1month: parseInt(e.target.value),
+                        })
+                      }
+                      className="input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      3 Months Price
+                    </label>
+                    <input
+                      type="number"
+                      value={courseForm.price_3months}
+                      onChange={(e) =>
+                        setCourseForm({
+                          ...courseForm,
+                          price_3months: parseInt(e.target.value),
+                        })
+                      }
+                      className="input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      6 Months Price
+                    </label>
+                    <input
+                      type="number"
+                      value={courseForm.price_6months}
+                      onChange={(e) =>
+                        setCourseForm({
+                          ...courseForm,
+                          price_6months: parseInt(e.target.value),
+                        })
+                      }
+                      className="input"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button onClick={handleCreateCourse} className="btn-primary flex-1">
+                  Create Course
+                </button>
+                <button
+                  onClick={() => setShowCourseModal(false)}
+                  className="btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Module Modal */}
+      {showModuleModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">
+                  Add Module to "{selectedCourse?.title}"
+                </h2>
+                <button onClick={() => setShowModuleModal(false)}>
+                  <XMarkIcon className="w-6 h-6 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Module Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Module Title"
+                    value={moduleForm.title}
+                    onChange={(e) =>
+                      setModuleForm({ ...moduleForm, title: e.target.value })
+                    }
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Order
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Order"
+                    value={moduleForm.order}
+                    onChange={(e) =>
+                      setModuleForm({
+                        ...moduleForm,
+                        order: parseInt(e.target.value),
+                      })
+                    }
+                    className="input"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button onClick={handleAddModule} className="btn-primary flex-1">
+                  Add Module
+                </button>
+                <button
+                  onClick={() => setShowModuleModal(false)}
+                  className="btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lesson Modal */}
+      {showLessonModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">
+                  Add Lesson to "{selectedModule?.title}"
+                </h2>
+                <button onClick={() => setShowLessonModal(false)}>
+                  <XMarkIcon className="w-6 h-6 text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Lesson Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Lesson Title"
+                    value={lessonForm.title}
+                    onChange={(e) =>
+                      setLessonForm({ ...lessonForm, title: e.target.value })
+                    }
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Video URL *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Video URL"
+                    value={lessonForm.videoUrl}
+                    onChange={(e) =>
+                      setLessonForm({ ...lessonForm, videoUrl: e.target.value })
+                    }
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    PDF URL
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="PDF URL"
+                    value={lessonForm.pdfUrl}
+                    onChange={(e) =>
+                      setLessonForm({ ...lessonForm, pdfUrl: e.target.value })
+                    }
+                    className="input"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Order
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Order"
+                      value={lessonForm.order}
+                      onChange={(e) =>
+                        setLessonForm({
+                          ...lessonForm,
+                          order: parseInt(e.target.value),
+                        })
+                      }
+                      className="input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Duration (min)
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Duration"
+                      value={lessonForm.duration}
+                      onChange={(e) =>
+                        setLessonForm({
+                          ...lessonForm,
+                          duration: parseInt(e.target.value),
+                        })
+                      }
+                      className="input"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button onClick={handleAddLesson} className="btn-primary flex-1">
+                  Add Lesson
+                </button>
+                <button
+                  onClick={() => setShowLessonModal(false)}
+                  className="btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Quiz Modal */}
       {showQuizModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -1053,7 +1348,7 @@ const AdminDashboard = () => {
               </select>
             </div>
 
-            {/* Module Selection (only for module quiz) */}
+            {/* Module Selection */}
             {quizType === "module" && (
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">
@@ -1065,7 +1360,6 @@ const AdminDashboard = () => {
                     setSelectedModuleForQuiz(parseInt(e.target.value))
                   }
                   className="input"
-                  required
                 >
                   <option value="">Select a module</option>
                   {modules.map((module) => (
@@ -1219,6 +1513,8 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Quiz Modal */}
       {showEditQuizModal && selectedQuiz && (
         <EditQuizModal
           isOpen={showEditQuizModal}
@@ -1230,9 +1526,176 @@ const AdminDashboard = () => {
           onQuizUpdated={refreshQuizzes}
         />
       )}
+      {/* Edit Modal - For Courses, Modules, Lessons */}
+{showEditModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">
+            Edit {editType === "course" ? "Course" : editType === "module" ? "Module" : "Lesson"}
+          </h2>
+          <button onClick={() => setShowEditModal(false)}>
+            <XMarkIcon className="w-6 h-6 text-gray-500" />
+          </button>
+        </div>
 
-      {/* Edit Modal, Course Modal, Module Modal, Lesson Modal - Keep as is */}
-      {/* ... (keep your existing modals) ... */}
+        {/* Edit Course Form */}
+        {editType === "course" && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Course Title *</label>
+              <input
+                type="text"
+                value={courseForm.title}
+                onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea
+                value={courseForm.description}
+                onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+                className="input"
+                rows={3}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Thumbnail URL</label>
+              <input
+                type="text"
+                value={courseForm.thumbnail}
+                onChange={(e) => handleImageChange(e.target.value)}
+                className="input"
+              />
+              {imagePreview && (
+                <div className="mt-2">
+                  <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg border" />
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">1 Month (₹)</label>
+                <input
+                  type="number"
+                  value={courseForm.price_1month}
+                  onChange={(e) => setCourseForm({ ...courseForm, price_1month: parseInt(e.target.value) })}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">3 Months (₹)</label>
+                <input
+                  type="number"
+                  value={courseForm.price_3months}
+                  onChange={(e) => setCourseForm({ ...courseForm, price_3months: parseInt(e.target.value) })}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">6 Months (₹)</label>
+                <input
+                  type="number"
+                  value={courseForm.price_6months}
+                  onChange={(e) => setCourseForm({ ...courseForm, price_6months: parseInt(e.target.value) })}
+                  className="input"
+                />
+              </div>
+            </div>
+            <button onClick={handleUpdateCourse} className="btn-primary w-full">
+              Update Course
+            </button>
+          </div>
+        )}
+
+        {/* Edit Module Form */}
+        {editType === "module" && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Module Title *</label>
+              <input
+                type="text"
+                value={moduleForm.title}
+                onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Order</label>
+              <input
+                type="number"
+                value={moduleForm.order}
+                onChange={(e) => setModuleForm({ ...moduleForm, order: parseInt(e.target.value) })}
+                className="input"
+              />
+            </div>
+            <button onClick={handleUpdateModule} className="btn-primary w-full">
+              Update Module
+            </button>
+          </div>
+        )}
+
+        {/* Edit Lesson Form */}
+        {editType === "lesson" && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Lesson Title *</label>
+              <input
+                type="text"
+                value={lessonForm.title}
+                onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Video URL *</label>
+              <input
+                type="text"
+                value={lessonForm.videoUrl}
+                onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">PDF URL</label>
+              <input
+                type="text"
+                value={lessonForm.pdfUrl}
+                onChange={(e) => setLessonForm({ ...lessonForm, pdfUrl: e.target.value })}
+                className="input"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Order</label>
+                <input
+                  type="number"
+                  value={lessonForm.order}
+                  onChange={(e) => setLessonForm({ ...lessonForm, order: parseInt(e.target.value) })}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Duration (min)</label>
+                <input
+                  type="number"
+                  value={lessonForm.duration}
+                  onChange={(e) => setLessonForm({ ...lessonForm, duration: parseInt(e.target.value) })}
+                  className="input"
+                />
+              </div>
+            </div>
+            <button onClick={handleUpdateLesson} className="btn-primary w-full">
+              Update Lesson
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
